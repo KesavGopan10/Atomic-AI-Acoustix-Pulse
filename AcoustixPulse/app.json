@@ -1,0 +1,54 @@
+{
+    "expo": {
+        "name": "Acoustix Pulse",
+        "slug": "acoustix-pulse",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "dark",
+        "newArchEnabled": true,
+        "splash": {
+            "backgroundColor": "#101922"
+        },
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.acoustixpulse.app",
+            "infoPlist": {
+                "NSMicrophoneUsageDescription": "Acoustix Pulse needs access to your microphone to record breath sounds for respiratory analysis.",
+                "NSCameraUsageDescription": "Acoustix Pulse needs access to your camera to capture medical images for analysis."
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#101922"
+            },
+            "package": "com.acoustixpulse.app",
+            "permissions": [
+                "android.permission.RECORD_AUDIO",
+                "android.permission.CAMERA"
+            ]
+        },
+        "web": {
+            "favicon": "./assets/favicon.png",
+            "bundler": "metro"
+        },
+        "scheme": "acoustix-pulse",
+        "plugins": [
+            "expo-router",
+            [
+                "expo-audio",
+                {
+                    "microphonePermission": "Acoustix Pulse needs access to your microphone to record breath sounds."
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "Acoustix Pulse needs access to your photos to upload medical scans.",
+                    "cameraPermission": "Acoustix Pulse needs access to your camera to capture medical images."
+                }
+            ]
+        ]
+    }
+}

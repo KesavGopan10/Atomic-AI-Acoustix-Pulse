@@ -1,0 +1,11 @@
+.venv
+.git
+__pycache__
+*.pyc
+*.pyo
+*.ipynb
+*.py.bak
+uv.lock
+.python-version
+README.md
+respiratory_disease_rf_cv_91_f1_score.py

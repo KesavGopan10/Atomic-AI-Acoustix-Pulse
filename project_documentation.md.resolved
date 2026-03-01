@@ -1,0 +1,129 @@
+# 🏥 Project Documentation: Acoustix Pulse & Medical AI Platform
+
+## 🌟 Executive Summary
+**Acoustix Pulse** is a cutting-edge, AI-driven healthcare ecosystem designed to provide accessible, rapid, and intelligent medical diagnostic support. By combining specialized machine learning models with state-of-the-art Large Language Models (LLMs) via **Amazon Bedrock**, the platform offers a comprehensive suite of tools ranging from respiratory sound analysis to complex cardiac risk assessment and medical image interpretation.
+
+---
+
+## 🚀 Complete Product & Features
+
+The product consists of a **Cross-Platform Mobile Application (Acoustix Pulse)** and a **High-Performance Backend (Medical AI Platform API)**.
+
+### **Core Capabilities**
+
+1.  **🫁 Respiratory Disease Classifier**
+    -   **What it does:** Analyzes breath and cough recordings to detect respiratory conditions.
+    -   **Conditions detected:** Asthma, Bronchiectasis, Bronchiolitis, COPD, Healthy, LRTI, Pneumonia, URTI.
+    -   **Accuracy:** 91% weighted F1-score.
+
+2.  **❤️ Heart Disease Risk Assessment**
+    -   **What it does:** Evaluates 11 clinical data points (age, chest pain type, cholesterol, etc.) to assess cardiac risk.
+    -   **Process:** Uses a 3-step LLM chain for triage, diagnosis, and full report generation on Amazon Bedrock.
+
+3.  **🔬 Medical Image & Scan Analysis**
+    -   **What it does:** Interprets various medical scans (Chest X-Rays, ECGs, CT scans, and MRIs) using Amazon Bedrock's Vision capabilities.
+    -   **Benefit:** Provides instant radiological findings and structured reports.
+
+4.  **🧪 Lab Report Interpretation**
+    -   **What it does:** Uses Amazon Bedrock Vision AI to extract data from physical lab reports (blood tests, CBC, etc.) and interpret results based on normal ranges.
+
+5.  **💬 Conversational Symptom Checker**
+    -   **What it does:** A stateful, interactive AI assistant that chats with users to assess symptoms and provide guidance.
+
+6.  **💊 Drug Interaction & Safety Checker**
+    -   **What it does:** Checks multiple medications for potential pairwise interactions and contraindications using Amazon Bedrock models.
+
+---
+
+## ❓ Why It Matters
+
+In the current healthcare landscape, many people face barriers to early diagnosis, including:
+-   **Limited Access:** Shortage of specialists in remote or underserved areas.
+-   **High Costs:** Expensive diagnostic tests and consultations.
+-   **Anxiety & Confusion:** Difficulty interpreting complex medical documents like lab reports or scans.
+-   **Delayed Triage:** Patients often wait too long before seeking care for critical conditions like heart disease.
+
+**Acoustix Pulse** bridges this gap by providing professional-grade AI insights directly to the user's smartphone, enabling them to make informed decisions about their health.
+
+---
+
+## 🛠️ Architecture Stack
+
+### **Frontend (Mobile App)**
+-   **Framework:** React Native with Expo (SDK 52).
+-   **Navigation:** Expo Router (file-based).
+-   **Media handling:** Expo AV (audio) and Expo Image Picker.
+-   **Language:** TypeScript for robust type safety.
+
+### **Backend (Core Intelligence)**
+-   **Framework:** FastAPI (Python).
+-   **Model:** Random Forest (Scikit-learn) for audio classification.
+-   **LLM Provider:** **Amazon Bedrock** (utilizing Claude 3.5 Sonnet for text and vision).
+-   **Processing:** Librosa for sophisticated audio feature extraction.
+-   **Environment:** Docker for containerized deployment.
+
+---
+
+## 🤝 Our Solution: How This Helps People
+
+Our solution is more than just a set of tools; it is a **Health Companion**.
+
+-   **Instant Triage:** Tells users when a situation is urgent (e.g., Red Flags in cardiac data).
+-   **Complexity Decoder:** Translates complicated medical jargon from reports into plain, actionable language.
+-   **Cost-Effective Monitoring:** Allows for frequent monitoring of chronic conditions (like COPD) from home.
+-   **Safe Medication Management:** Helps elderly or multi-medication patients avoid dangerous drug combinations.
+
+---
+
+## 🗺️ System Architecture
+
+### **Data Flow Overview**
+
+```mermaid
+graph TB
+    subgraph "Acoustix Pulse Mobile App"
+        A[User Input/Recordings] --> B[API Client]
+    end
+
+    subgraph "Medical AI API (FastAPI)"
+        B --> C[CORS/Middleware]
+        C --> D{Router}
+        
+        subgraph "Classical ML Pipeline"
+            D --> E["/predict (Audio)"]
+            E --> F[Audio Preprocessing]
+            F --> G[(Random Forest Model)]
+        end
+
+        subgraph "AI Reasoner (Amazon Bedrock)"
+            D --> H["/heart, /scan, /lab, /drugs, /symptoms"]
+            H --> I[Bedrock Prompt Engineering]
+            I --> J[Amazon Bedrock: Claude 3.5 Sonnet]
+        end
+    end
+
+    G --> K[JSON Result]
+    J --> K
+    K --> B
+```
+
+### **Heart Disease Analysis Pipeline**
+A sophisticated 3-step reasoning process ensures high-quality medical reporting:
+1.  **Triage:** Immediate assessment of urgency and potential "red flags."
+2.  **Diagnosis:** Data-driven clinical assessment and differential diagnosis.
+3.  **Comprehensive Report:** Generation of a final Markdown report with actionable advice.
+
+---
+
+## 🌍 Impact
+
+**Acoustix Pulse** democratizes medical intelligence:
+-   **Empowerment:** Giving individuals the tools to understand their bodies.
+-   **Efficiency:** Streamlining the clinical workflow by providing doctors with pre-analyzed patient data.
+-   **Preventative Care:** Moving from "reactive" to "proactive" healthcare by catching indicators before they become emergencies.
+-   **Accessibility:** Reducing the cost of preliminary medical assessments to near zero.
+
+---
+
+### **⚠️ Disclaimer**
+*This platform is designed for educational and preliminary screening purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.*
