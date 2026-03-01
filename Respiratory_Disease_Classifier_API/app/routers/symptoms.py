@@ -14,6 +14,8 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Request
 
+from app.anonymizer import anonymizer
+
 from app.config import get_settings
 from app.schemas import SymptomChatRequest, SymptomChatResponse
 
@@ -93,10 +95,16 @@ async def symptom_chat(request: Request, req: SymptomChatRequest):
 
     Powered by the configured AI Provider (Bedrock/Groq).
     """
-    # Build messages for common format
-    messages = []
-    for msg in req.messages:
-        messages.append({"role": msg.role, "content": msg.content})
+    # -----------------------------------------------------------------------
+    # ANONYMIZATION: scrub PHI from every message before sending to cloud AI
+    # Free-text chat is the highest-risk PHI surface — patients may include
+    # their name, DOB, phone number, address, or MRN in natural language.
+    # -----------------------------------------------------------------------
+    raw_messages = [
+        {"role": msg.role, "content": msg.content}
+        for msg in req.messages
+    ]
+    messages = anonymizer.scrub_messages(raw_messages, field_prefix="symptom_chat")
 
     try:
         raw_text, usage = await invoke_llm(

@@ -16,6 +16,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Request
 
+from app.anonymizer import anonymizer
 from app.config import get_settings
 from app.schemas import HeartAnalysisResponse, HeartDiseaseInput
 
@@ -94,9 +95,15 @@ Always include a disclaimer that this is AI-generated and not a substitute for p
 # ---------------------------------------------------------------------------
 
 def _build_patient_summary(req: HeartDiseaseInput) -> str:
-    """Format the clinical input as a readable summary for the LLM."""
+    """
+    Format the clinical input as a readable summary for the LLM.
+
+    ANONYMIZATION APPLIED:
+    - Exact age is replaced with an age bracket (HIPAA Safe Harbor §164.514(b))
+    - All other fields are clinical measurements, not direct patient identifiers
+    """
     return (
-        f"Age: {req.age} | Sex: {req.sex}\n"
+        f"Age group: {anonymizer.bucket_age(req.age)} | Sex: {req.sex}\n"
         f"Chest Pain Type: {req.chest_pain_type}\n"
         f"Resting BP: {req.resting_bp} mm Hg\n"
         f"Cholesterol: {req.cholesterol} mg/dl\n"

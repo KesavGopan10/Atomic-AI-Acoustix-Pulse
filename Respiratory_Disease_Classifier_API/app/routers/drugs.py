@@ -13,6 +13,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Request
 
+from app.anonymizer import anonymizer
 from app.config import get_settings
 from app.schemas import DrugCheckRequest, DrugCheckResponse
 
@@ -106,14 +107,22 @@ async def check_drugs(request: Request, req: DrugCheckRequest):
 
     Powered by the configured AI Provider (Bedrock/Groq).
     """
-    # Build user prompt
+    # -----------------------------------------------------------------------
+    # ANONYMIZATION: de-identify before building the LLM prompt
+    # - Age → age bracket (exact age is a HIPAA quasi-identifier)
+    # - Condition → free-text scrub (user may accidentally include PII)
+    # - Allergen names are NOT PHI (they are drug/substance names)
+    # -----------------------------------------------------------------------
     med_list = ", ".join(req.medications)
     context_parts = [f"Medications to analyze: {med_list}"]
 
     if req.condition:
-        context_parts.append(f"Patient's medical condition: {req.condition}")
+        # Scrub any inadvertent PHI in the condition free-text field
+        clean_condition = anonymizer.scrub_text(req.condition, field_name="drug_condition")
+        context_parts.append(f"Patient's medical condition: {clean_condition}")
     if req.age is not None:
-        context_parts.append(f"Patient age: {req.age} years")
+        # Replace exact age with HIPAA-safe bracket
+        context_parts.append(f"Patient age group: {anonymizer.bucket_age(req.age)}")
     if req.allergies:
         context_parts.append(f"Known drug allergies: {', '.join(req.allergies)}")
 

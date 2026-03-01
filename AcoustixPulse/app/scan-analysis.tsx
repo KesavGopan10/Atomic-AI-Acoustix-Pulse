@@ -43,7 +43,10 @@ export default function ScanAnalysisScreen() {
         });
 
         if (!pickerResult.canceled && pickerResult.assets[0]) {
-            analyzeImage(pickerResult.assets[0].uri, pickerResult.assets[0].fileName || 'scan.jpg');
+            const asset = pickerResult.assets[0];
+            const uri = typeof asset.uri === 'string' ? asset.uri : '';
+            if (!uri) { Alert.alert('Error', 'Could not read image URI.'); return; }
+            analyzeImage(uri, asset.fileName || '');
         }
     };
 
@@ -59,7 +62,10 @@ export default function ScanAnalysisScreen() {
         });
 
         if (!pickerResult.canceled && pickerResult.assets[0]) {
-            analyzeImage(pickerResult.assets[0].uri, pickerResult.assets[0].fileName || 'scan.jpg');
+            const asset = pickerResult.assets[0];
+            const uri = typeof asset.uri === 'string' ? asset.uri : '';
+            if (!uri) { Alert.alert('Error', 'Could not read camera URI.'); return; }
+            analyzeImage(uri, asset.fileName || '');
         }
     };
 

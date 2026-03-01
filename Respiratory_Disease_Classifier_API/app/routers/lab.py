@@ -15,6 +15,7 @@ import logging
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
+from app.anonymizer import anonymizer
 from app.config import get_settings
 from app.schemas import LabReportResponse, LabReportType
 
@@ -37,13 +38,23 @@ You are a clinical laboratory AI specialist with expertise in reading lab report
 
 Analyze the provided lab report image carefully. Extract ALL test values visible in the report.
 
+## PRIVACY & HIPAA COMPLIANCE — CRITICAL
+Do NOT extract, read, or return any of the following:
+- Patient name, initials, or any personal identifier
+- Patient date of birth or age
+- Physician or provider name
+- Facility or hospital name
+- Account number, MRN, or any ID number
+- Collection date or report date
+Set ALL `patient_info` fields to null. Your sole focus is laboratory test values.
+
 You MUST respond with ONLY valid JSON in this exact structure:
 {
   "report_type": "blood_test|urine_test|lipid_panel|liver_function|kidney_function|thyroid_panel|cbc|metabolic_panel|general",
   "patient_info": {
-    "name": "if visible, else null",
-    "age": "if visible, else null",
-    "date": "test date if visible, else null"
+    "name": null,
+    "age": null,
+    "date": null
   },
   "extracted_values": [
     {
@@ -59,16 +70,17 @@ You MUST respond with ONLY valid JSON in this exact structure:
   "critical_flags": [
     "Parameter X is critically high/low — requires immediate attention"
   ],
-  "summary": "Brief overall summary of the lab report findings"
+  "summary": "Brief overall summary of the lab report findings (NO patient identifiers)"
 }
 
 ## Rules
-- Extract EVERY value visible in the image, not just abnormal ones
+- Extract EVERY test value visible in the image, not just abnormal ones
 - Compare each value against its normal range to determine status
 - Mark values outside normal range as "low" or "high"
 - Mark values significantly outside range (>2x deviation) as "critical_low" or "critical_high"
 - If you cannot read a value clearly, include it with value: null and note "unclear" in status
-- Be precise with units and normal ranges"""
+- Be precise with units and normal ranges
+- NEVER include any patient name, ID, date, or facility in your response"""
 
 INTERPRETATION_PROMPT = """\
 You are a senior pathologist and clinical laboratory specialist.
@@ -186,8 +198,12 @@ async def analyze_lab_report(
     total_tokens = {"prompt": 0, "completion": 0, "total": 0}
 
     try:
-        # --- Read and encode image ---
-        image_bytes = await file.read()
+        # --- Read, EXIF-strip, and encode image ---
+        raw_image_bytes = await file.read()
+        # ANONYMIZATION LAYER 1: Strip all EXIF / metadata from the image.
+        # Lab printouts photographed or scanned may carry patient name, DOB,
+        # MRN, and facility data in image metadata — all classified as PHI.
+        image_bytes = anonymizer.scrub_image(raw_image_bytes, field_name="lab_report")
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
         mime_type = _detect_mime(file.filename or "", file.content_type or "")
 
@@ -229,6 +245,12 @@ async def analyze_lab_report(
         total_tokens["completion"] += usage1["completion_tokens"]
 
         extracted = _parse_json_safe(raw_extraction)
+
+        # ANONYMIZATION LAYER 3: Drop patient_info entirely before Step 2.
+        # Even though the prompt instructs the AI not to extract patient info,
+        # we also filter it out defensively from the parsed output so it is
+        # never forwarded to the second LLM call or logged.
+        extracted.pop("patient_info", None)
 
         # =================================================================
         # STEP 2 — Medical Interpretation (Report)

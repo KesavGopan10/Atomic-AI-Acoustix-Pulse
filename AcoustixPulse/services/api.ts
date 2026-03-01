@@ -183,10 +183,28 @@ export async function analyzeScan(
     scanType: 'chest_xray' | 'ecg' | 'ct_scan' | 'mri' = 'chest_xray',
     mimeType: string = 'image/jpeg'
 ): Promise<ScanAnalysisResponse> {
+    // --- Guard: ensure fileUri is actually a string ---
+    if (!fileUri || typeof fileUri !== 'string') {
+        throw new Error('Invalid file URI provided for scan upload.');
+    }
+
+    // --- Derive a safe filename with extension ---
+    // On Android, fileName may be null or a bare content:// path without an extension.
+    // We fall back to extracting the extension from the URI or from the mimeType.
+    const extFromUri = fileUri.split('.').pop()?.toLowerCase() ?? '';
+    const extFromMime = mimeType === 'image/png' ? 'png'
+        : mimeType === 'image/webp' ? 'webp'
+            : 'jpg';
+    const validImageExts = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
+    const resolvedExt = validImageExts.has(extFromUri) ? extFromUri : extFromMime;
+    // Strip any path component from fileName; if it has no extension, append one.
+    const baseName = (fileName || '').split('/').pop()?.split('?')[0] || '';
+    const safeFileName = baseName.includes('.') ? baseName : `scan.${resolvedExt}`;
+
     const formData = new FormData();
     formData.append('file', {
         uri: fileUri,
-        name: fileName || 'scan.jpg',
+        name: safeFileName,
         type: mimeType,
     } as any);
     formData.append('scan_type', scanType);
@@ -240,10 +258,29 @@ export async function analyzeLabReport(
     reportType: string = 'general',
     mimeType: string = 'image/jpeg'
 ): Promise<LabReportResponse> {
+    // --- Guard: ensure fileUri is actually a string ---
+    // On some Expo versions, the full asset object can accidentally be passed.
+    if (!fileUri || typeof fileUri !== 'string') {
+        throw new Error('Invalid file URI provided for lab report upload.');
+    }
+
+    // --- Derive a safe filename with extension ---
+    // On Android, fileName can be null when picking from gallery (content:// URI).
+    // Silently fall back to a safe name derived from MIME type.
+    const extFromUri = fileUri.split('.').pop()?.split('?')[0]?.toLowerCase() ?? '';
+    const extFromMime = mimeType === 'image/png' ? 'png'
+        : mimeType === 'image/webp' ? 'webp'
+            : 'jpg';
+    const validImageExts = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
+    const resolvedExt = validImageExts.has(extFromUri) ? extFromUri : extFromMime;
+    // Strip any path component from fileName; if it has no extension, append one.
+    const baseName = (fileName || '').split('/').pop()?.split('?')[0] || '';
+    const safeFileName = baseName.includes('.') ? baseName : `lab_report.${resolvedExt}`;
+
     const formData = new FormData();
     formData.append('file', {
         uri: fileUri,
-        name: fileName || 'lab_report.jpg',
+        name: safeFileName,
         type: mimeType,
     } as any);
     formData.append('report_type', reportType);

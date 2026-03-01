@@ -17,7 +17,10 @@ dependencies = [
     "pydantic-settings>=2.2.0",
     "pydub>=0.25.1",
     "boto3>=1.42.59",
+    "pillow>=12.1.1",
 ]
 
 [tool.uv]
-dev-dependencies = []
+dev-dependencies = [
+    "pytest>=9.0.2",
+]

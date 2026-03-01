@@ -17,6 +17,7 @@ import logging
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
+from app.anonymizer import anonymizer
 from app.config import get_settings
 from app.schemas import ScanAnalysisResponse, ScanType
 
@@ -227,8 +228,12 @@ async def analyze_scan(
     _validate_image(file)
 
     try:
-        # --- Read and encode image ---
-        image_bytes = await file.read()
+        # --- Read, EXIF-strip, and encode image ---
+        raw_image_bytes = await file.read()
+        # ANONYMIZATION: Strip all EXIF / metadata from the image.
+        # Medical imaging devices embed patient name, DOB, MRN, facility name,
+        # and device serial numbers in EXIF headers — all classified as PHI.
+        image_bytes = anonymizer.scrub_image(raw_image_bytes, field_name=f"scan_{scan_type.value}")
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
         mime_type = _detect_mime(file.filename or "", file.content_type or "")
 

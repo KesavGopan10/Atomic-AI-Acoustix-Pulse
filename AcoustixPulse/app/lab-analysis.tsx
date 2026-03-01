@@ -45,7 +45,11 @@ export default function LabAnalysisScreen() {
         });
 
         if (!pickerResult.canceled && pickerResult.assets[0]) {
-            analyzeImage(pickerResult.assets[0].uri, pickerResult.assets[0].fileName || 'lab_report.jpg');
+            const asset = pickerResult.assets[0];
+            // Ensure we have a real string URI (not an object)
+            const uri = typeof asset.uri === 'string' ? asset.uri : '';
+            if (!uri) { Alert.alert('Error', 'Could not read image URI.'); return; }
+            analyzeImage(uri, asset.fileName || '');
         }
     };
 
@@ -58,7 +62,10 @@ export default function LabAnalysisScreen() {
 
         const pickerResult = await ImagePicker.launchCameraAsync({ quality: 0.8 });
         if (!pickerResult.canceled && pickerResult.assets[0]) {
-            analyzeImage(pickerResult.assets[0].uri, pickerResult.assets[0].fileName || 'lab_report.jpg');
+            const asset = pickerResult.assets[0];
+            const uri = typeof asset.uri === 'string' ? asset.uri : '';
+            if (!uri) { Alert.alert('Error', 'Could not read camera URI.'); return; }
+            analyzeImage(uri, asset.fileName || '');
         }
     };
 

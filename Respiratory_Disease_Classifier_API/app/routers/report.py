@@ -6,6 +6,7 @@ AI-generated patient report endpoint powered by Groq LLM.
 
 from fastapi import APIRouter, HTTPException, Request
 
+from app.anonymizer import anonymizer
 from app.config import get_settings
 from app.schemas import ReportRequest, ReportResponse
 
@@ -42,17 +43,32 @@ Always include a disclaimer that this is AI-generated and not a substitute for p
 # ---------------------------------------------------------------------------
 
 def _build_patient_context(req: ReportRequest) -> str:
-    """Build a concise patient context string from the request."""
+    """
+    Build an anonymized patient context string.
+    Exact age/height/weight are replaced with HIPAA-safe brackets
+    before this string is ever sent to the cloud AI model.
+    """
     parts = [f"Diagnosed condition: **{req.disease.value}**"]
+    # --- ANONYMIZATION: replace exact values with safe brackets ---
     if req.age is not None:
-        parts.append(f"Age: {req.age} years")
+        parts.append(f"Age group: {anonymizer.bucket_age(req.age)}")
     if req.height is not None:
-        parts.append(f"Height: {req.height} cm")
+        parts.append(f"Height range: {anonymizer.bracket_height(req.height)}")
     if req.weight is not None:
-        parts.append(f"Weight: {req.weight} kg")
+        parts.append(f"Weight range: {anonymizer.bracket_weight(req.weight)}")
+    # BMI is derived from exact height+weight — omit to prevent re-identification
     if req.height and req.weight:
-        bmi = round(req.weight / ((req.height / 100) ** 2), 1)
-        parts.append(f"BMI: {bmi}")
+        # Send BMI category instead of exact value
+        bmi = req.weight / ((req.height / 100) ** 2)
+        if bmi < 18.5:
+            bmi_label = "Underweight (BMI < 18.5)"
+        elif bmi < 25:
+            bmi_label = "Normal weight (BMI 18.5–24.9)"
+        elif bmi < 30:
+            bmi_label = "Overweight (BMI 25–29.9)"
+        else:
+            bmi_label = "Obese (BMI ≥ 30)"
+        parts.append(f"BMI category: {bmi_label}")
     return "\n".join(parts)
 
 
