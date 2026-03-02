@@ -21,7 +21,9 @@ RUN pip install --no-cache-dir \
     python-multipart \
     groq \
     pydantic-settings \
-    pydub
+    pydub \
+    boto3 \
+    pillow
 
 # Copy source, model, and dashboard
 COPY main.py model_utils.py respiratory_classifier_nocopd.pkl  ./
