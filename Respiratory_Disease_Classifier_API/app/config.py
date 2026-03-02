@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # --- Model ---
     model_path: str = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)), "respiratory_classifier.pkl"
+        os.path.dirname(os.path.dirname(__file__)), "respiratory_classifier_nocopd.pkl"
     )
 
     # --- Cache ---

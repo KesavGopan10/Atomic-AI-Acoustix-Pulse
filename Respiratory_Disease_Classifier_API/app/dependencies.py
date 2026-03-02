@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     if not __import__("os").path.exists(settings.model_path):
         raise FileNotFoundError(
             f"Model file not found at '{settings.model_path}'. "
-            "Make sure respiratory_classifier.pkl is in the project root."
+            f"Make sure {os.path.basename(settings.model_path)} is in the project root."
         )
 
     app.state.model = joblib.load(settings.model_path)
