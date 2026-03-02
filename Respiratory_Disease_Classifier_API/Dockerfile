@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir \
     pydub
 
 # Copy source, model, and dashboard
-COPY main.py model_utils.py respiratory_classifier.pkl  ./
+COPY main.py model_utils.py respiratory_classifier_nocopd.pkl  ./
 COPY app/ ./app/
 COPY static/ ./static/
 
