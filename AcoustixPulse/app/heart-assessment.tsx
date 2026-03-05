@@ -23,16 +23,25 @@ function OptionSelector({
     options,
     selected,
     onSelect,
+    infoAlert,
 }: {
     label: string;
     options: OptionType[];
     selected: string;
     onSelect: (val: string) => void;
+    infoAlert?: { title: string; message: string };
 }) {
     const { currentColors, isDark } = useTheme();
     return (
         <View style={styles.fieldSection}>
-            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>{label}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: Spacing.sm }}>
+                <Text style={[styles.fieldLabel, { color: currentColors.textPrimary, marginBottom: 0 }]}>{label}</Text>
+                {infoAlert && (
+                    <TouchableOpacity onPress={() => Alert.alert(infoAlert.title, infoAlert.message)}>
+                        <Ionicons name="information-circle-outline" size={18} color={currentColors.textSecondary} />
+                    </TouchableOpacity>
+                )}
+            </View>
             <View style={styles.optionRow}>
                 {options.map((opt) => (
                     <TouchableOpacity
@@ -181,6 +190,10 @@ export default function HeartAssessmentScreen() {
                         ]}
                         selected={chestPainType}
                         onSelect={setChestPainType}
+                        infoAlert={{
+                            title: 'Chest Pain Types',
+                            message: 'ASY: Asymptomatic (no symptoms)\nATA: Atypical Angina (differs from classic heart pain)\nNAP: Non-Anginal Pain (pain not caused by heart)\nTA: Typical Angina (classic heart pain)'
+                        }}
                     />
 
                     <View style={styles.rowFields}>
@@ -214,10 +227,14 @@ export default function HeartAssessmentScreen() {
                         ]}
                         selected={fastingBS}
                         onSelect={setFastingBS}
+                        infoAlert={{
+                            title: 'Fasting Blood Sugar',
+                            message: 'A fasting blood sugar level over 120 mg/dl can indicate diabetes, a risk factor for heart disease.'
+                        }}
                     />
 
                     <OptionSelector
-                        label="Resting ECG"
+                        label="Resting ECG (Electrocardiogram)"
                         options={[
                             { label: 'Normal', value: 'Normal' },
                             { label: 'ST', value: 'ST' },
@@ -225,6 +242,10 @@ export default function HeartAssessmentScreen() {
                         ]}
                         selected={restingECG}
                         onSelect={setRestingECG}
+                        infoAlert={{
+                            title: 'Resting ECG',
+                            message: 'Normal: Normal reading\nST: Features ST-T wave abnormalities\nLVH: Left Ventricular Hypertrophy (enlarged heart muscle)'
+                        }}
                     />
 
                     <View style={styles.fieldSection}>
@@ -249,7 +270,12 @@ export default function HeartAssessmentScreen() {
                     />
 
                     <View style={styles.fieldSection}>
-                        <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>ST Depression (Oldpeak)</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: Spacing.sm }}>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary, marginBottom: 0 }]}>ST Depression (Oldpeak)</Text>
+                            <TouchableOpacity onPress={() => Alert.alert('Oldpeak', 'Refers to ST segment depression induced by exercise relative to rest. It helps determine heart stress under effort.')}>
+                                <Ionicons name="information-circle-outline" size={18} color={currentColors.textSecondary} />
+                            </TouchableOpacity>
+                        </View>
                         <TextInput
                             style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                             value={oldpeak}
@@ -260,7 +286,7 @@ export default function HeartAssessmentScreen() {
                     </View>
 
                     <OptionSelector
-                        label="ST Slope"
+                        label="ST Slope (Heart Peak Exercise)"
                         options={[
                             { label: 'Up', value: 'Up' },
                             { label: 'Flat', value: 'Flat' },
@@ -268,6 +294,10 @@ export default function HeartAssessmentScreen() {
                         ]}
                         selected={stSlope}
                         onSelect={setStSlope}
+                        infoAlert={{
+                            title: 'ST Slope',
+                            message: 'The slope of the peak exercise ST segment.\nUp: Upsloping (often typical/healthy)\nFlat: Flat (could suggest lower oxygen)\nDown: Downsloping (often a sign of an unhealthy heart response)'
+                        }}
                     />
                 </View>
 

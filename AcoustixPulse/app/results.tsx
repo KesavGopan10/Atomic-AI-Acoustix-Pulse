@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     SafeAreaView,
     ActivityIndicator,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -25,6 +26,7 @@ interface RiskMetric {
     probability: number;
     color: string;
     bgColor: string;
+    infoText: string;
 }
 
 function getRiskColor(level: RiskLevel) {
@@ -77,6 +79,7 @@ export default function ResultsScreen() {
             probability: allProbabilities.Asthma || 0,
             color: getRiskColor(getRiskLevel(allProbabilities.Asthma || 0)),
             bgColor: getRiskBgColor(getRiskLevel(allProbabilities.Asthma || 0)),
+            infoText: 'Asthma is a condition in which your airways narrow and swell, making it difficult to breathe.',
         },
         {
             name: 'Pneumonia',
@@ -89,6 +92,7 @@ export default function ResultsScreen() {
             probability: allProbabilities.Pneumonia || 0,
             color: getRiskColor(getRiskLevel(allProbabilities.Pneumonia || 0)),
             bgColor: getRiskBgColor(getRiskLevel(allProbabilities.Pneumonia || 0)),
+            infoText: 'Pneumonia is an infection that inflames the air sacs in one or both lungs, often causing a cough with phlegm.',
         },
         {
             name: 'COPD',
@@ -101,6 +105,7 @@ export default function ResultsScreen() {
             probability: allProbabilities.COPD || 0,
             color: getRiskColor(getRiskLevel(allProbabilities.COPD || 0)),
             bgColor: getRiskBgColor(getRiskLevel(allProbabilities.COPD || 0)),
+            infoText: 'COPD (Chronic Obstructive Pulmonary Disease) is a group of lung diseases that block airflow and make breathing difficult (like chronic bronchitis or emphysema).',
         },
         {
             name: 'URTI',
@@ -113,6 +118,7 @@ export default function ResultsScreen() {
             probability: allProbabilities.URTI || 0,
             color: getRiskColor(getRiskLevel(allProbabilities.URTI || 0)),
             bgColor: getRiskBgColor(getRiskLevel(allProbabilities.URTI || 0)),
+            infoText: 'URTI (Upper Respiratory Tract Infection) is a common infection in the nose, sinuses, or throat, such as a common cold.',
         },
     ];
 
@@ -225,7 +231,12 @@ export default function ResultsScreen() {
                             <Ionicons name={metric.icon} size={22} color={metric.color} />
                         </View>
                         <View style={styles.riskContent}>
-                            <Text style={[styles.riskName, { color: currentColors.textPrimary }]}>{metric.name}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                                <Text style={[styles.riskName, { color: currentColors.textPrimary, marginBottom: 0 }]}>{metric.name}</Text>
+                                <TouchableOpacity onPress={() => Alert.alert(`What is ${metric.name}?`, metric.infoText)}>
+                                    <Ionicons name="information-circle-outline" size={18} color={currentColors.textSecondary} />
+                                </TouchableOpacity>
+                            </View>
                             <Text style={[styles.riskDescription, { color: currentColors.textSecondary }]}>{metric.description}</Text>
                         </View>
                         <View style={styles.riskRight}>

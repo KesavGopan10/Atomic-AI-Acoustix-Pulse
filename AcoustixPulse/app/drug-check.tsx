@@ -16,6 +16,9 @@ import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants
 import { checkDrugs, DrugCheckResponse } from '@/services/api';
 import { useTheme } from '@/context/ThemeContext';
 
+const COMMON_DRUGS = ['Aspirin', 'Amoxicillin', 'Azithromycin', 'Acetaminophen', 'Albuterol', 'Atorvastatin', 'Amlodipine', 'Ibuprofen', 'Lisinopril', 'Levothyroxine', 'Metformin', 'Metoprolol', 'Omeprazole', 'Simvastatin', 'Losartan', 'Gabapentin', 'Hydrochlorothiazide', 'Sertraline', 'Montelukast', 'Fluticasone', 'Pantoprazole', 'Escitalopram', 'Meloxicam', 'Trazodone', 'Rosuvastatin', 'Clopidogrel', 'Propranolol', 'Atenolol', 'Ciprofloxacin', 'Cephalexin'];
+const COMMON_CONDITIONS = ['COPD (Chronic Obstructive Pulmonary Disease)', 'Asthma', 'Pneumonia', 'Heart Failure', 'Hypertension', 'Diabetes', 'Arthritis', 'Bronchitis', 'URTI', 'GERD', 'Anxiety', 'Depression', 'Arrhythmia'];
+
 export default function DrugCheckScreen() {
     const router = useRouter();
     const [medications, setMedications] = useState<string[]>(['']);
@@ -25,6 +28,8 @@ export default function DrugCheckScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const { currentColors, isDark } = useTheme();
     const [result, setResult] = useState<DrugCheckResponse | null>(null);
+    const [focusedMedIndex, setFocusedMedIndex] = useState<number | null>(null);
+    const [showConditionSuggest, setShowConditionSuggest] = useState(false);
 
     const addMedication = () => setMedications([...medications, '']);
     const updateMedication = (index: number, value: string) => {
@@ -73,7 +78,7 @@ export default function DrugCheckScreen() {
                 <View style={{ width: 44 }} />
             </View>
 
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 {!result ? (
                     <>
                         <View style={styles.heroSection}>
@@ -89,20 +94,33 @@ export default function DrugCheckScreen() {
                         <View style={[styles.formCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                             <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Medications</Text>
                             {medications.map((med, i) => (
-                                <View key={i} style={styles.medRow}>
-                                    <TextInput
-                                        style={[styles.textInput, { flex: 1, backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
-                                        value={med}
-                                        onChangeText={(val) => updateMedication(i, val)}
-                                        placeholder={`Medication ${i + 1}`}
-                                        placeholderTextColor={currentColors.textSecondary}
-                                    />
-                                    {medications.length > 1 && (
-                                        <TouchableOpacity style={styles.removeBtn} onPress={() => removeMedication(i)}>
-                                            <Ionicons name="close-circle" size={22} color={Colors.rose} />
-                                        </TouchableOpacity>
+                                <React.Fragment key={i}>
+                                    <View style={styles.medRow}>
+                                        <TextInput
+                                            style={[styles.textInput, { flex: 1, backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
+                                            value={med}
+                                            onChangeText={(val) => updateMedication(i, val)}
+                                            onFocus={() => setFocusedMedIndex(i)}
+                                            onBlur={() => { setTimeout(() => setFocusedMedIndex(null), 150) }}
+                                            placeholder={`Medication ${i + 1}`}
+                                            placeholderTextColor={currentColors.textSecondary}
+                                        />
+                                        {medications.length > 1 && (
+                                            <TouchableOpacity style={styles.removeBtn} onPress={() => removeMedication(i)}>
+                                                <Ionicons name="close-circle" size={22} color={Colors.rose} />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                    {focusedMedIndex === i && med.trim().length > 0 && (
+                                        <View style={[styles.suggestionsContainer, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, borderColor: currentColors.cardBorder }]}>
+                                            {COMMON_DRUGS.filter(d => d.toLowerCase().includes(med.toLowerCase()) && d.toLowerCase() !== med.toLowerCase()).slice(0, 4).map(suggestion => (
+                                                <TouchableOpacity key={suggestion} style={[styles.suggestionItem, { borderBottomColor: isDark ? currentColors.slate700 : currentColors.slate200 }]} onPress={() => { updateMedication(i, suggestion); setFocusedMedIndex(null); }}>
+                                                    <Text style={[styles.suggestionText, { color: currentColors.textPrimary }]}>{suggestion}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
                                     )}
-                                </View>
+                                </React.Fragment>
                             ))}
                             <TouchableOpacity style={styles.addBtn} onPress={addMedication}>
                                 <Ionicons name="add-circle" size={20} color={currentColors.primary} />
@@ -114,9 +132,20 @@ export default function DrugCheckScreen() {
                                 style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                 value={condition}
                                 onChangeText={setCondition}
+                                onFocus={() => setShowConditionSuggest(true)}
+                                onBlur={() => { setTimeout(() => setShowConditionSuggest(false), 150) }}
                                 placeholder="e.g., COPD, Heart Failure"
                                 placeholderTextColor={currentColors.textSecondary}
                             />
+                            {showConditionSuggest && condition.trim().length > 0 && (
+                                <View style={[styles.suggestionsContainer, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, borderColor: currentColors.cardBorder }]}>
+                                    {COMMON_CONDITIONS.filter(c => c.toLowerCase().includes(condition.toLowerCase()) && c.toLowerCase() !== condition.toLowerCase()).slice(0, 3).map(suggestion => (
+                                        <TouchableOpacity key={suggestion} style={[styles.suggestionItem, { borderBottomColor: isDark ? currentColors.slate700 : currentColors.slate200 }]} onPress={() => { setCondition(suggestion); setShowConditionSuggest(false); }}>
+                                            <Text style={[styles.suggestionText, { color: currentColors.textPrimary }]}>{suggestion}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
 
                             <View style={styles.rowFields}>
                                 <View style={{ flex: 1 }}>
@@ -226,7 +255,7 @@ export default function DrugCheckScreen() {
 
                 <View style={{ height: 40 }} />
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
@@ -266,4 +295,7 @@ const styles = StyleSheet.create({
     rH1: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: Colors.textPrimary, marginTop: Spacing.md },
     rH2: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.textPrimary, marginTop: Spacing.sm },
     rText: { fontSize: FontSize.md, color: Colors.textSecondary, lineHeight: 22 },
+    suggestionsContainer: { borderRadius: BorderRadius.md, marginTop: -Spacing.sm, marginBottom: Spacing.sm, borderWidth: 1, overflow: 'hidden' },
+    suggestionItem: { padding: Spacing.md, borderBottomWidth: 1 },
+    suggestionText: { fontSize: FontSize.md },
 });
