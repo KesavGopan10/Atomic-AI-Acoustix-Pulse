@@ -13,6 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { generateReport } from '@/services/api';
 import { getProfile } from '@/services/storage';
+import { useTheme } from '@/context/ThemeContext';
 
 type RiskLevel = 'Low' | 'Moderate' | 'High';
 
@@ -51,6 +52,7 @@ function getRiskLevel(prob: number): RiskLevel {
 export default function ResultsScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { currentColors, isDark } = useTheme();
     const [isLoadingReport, setIsLoadingReport] = useState(false);
 
     const prediction = (params.prediction as string) || 'Healthy';
@@ -152,15 +154,15 @@ export default function ResultsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Probability Assessment</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Probability Assessment</Text>
                 <TouchableOpacity style={styles.headerBtn}>
-                    <Ionicons name="share-outline" size={22} color={Colors.textPrimary} />
+                    <Ionicons name="share-outline" size={22} color={currentColors.textPrimary} />
                 </TouchableOpacity>
             </View>
 
@@ -173,21 +175,21 @@ export default function ResultsScreen() {
 
                 {/* Health Snapshot Header */}
                 <View style={styles.snapshotHeader}>
-                    <Text style={styles.snapshotTitle}>Health Snapshot</Text>
-                    <Text style={styles.snapshotDate}>Last analyzed: Today, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                    <Text style={[styles.snapshotTitle, { color: currentColors.textPrimary }]}>Health Snapshot</Text>
+                    <Text style={[styles.snapshotDate, { color: currentColors.textSecondary }]}>Last analyzed: Today, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                 </View>
 
                 {/* Donut Gauge */}
                 <View style={styles.gaugeContainer}>
                     <View style={styles.gaugeOuter}>
                         {/* Background ring */}
-                        <View style={styles.gaugeBg} />
+                        <View style={[styles.gaugeBg, { borderColor: isDark ? currentColors.slate800 : currentColors.slate200 }]} />
                         {/* Active arc (simulated with a bordered partial circle) */}
                         <View
                             style={[
                                 styles.gaugeArc,
                                 {
-                                    borderColor: Colors.primary,
+                                    borderColor: currentColors.primary,
                                     borderTopColor: 'transparent',
                                     borderRightColor: 'transparent',
                                     borderBottomColor: 'transparent',
@@ -202,12 +204,12 @@ export default function ResultsScreen() {
                                     {overallRiskLevel === 'Low' ? 'Low Risk' : overallRiskLevel === 'Moderate' ? 'Moderate Risk' : 'High Risk'}
                                 </Text>
                             </View>
-                            <Text style={styles.gaugeValue}>{overallRisk}%</Text>
-                            <Text style={styles.gaugeLabel}>Probability of{'\n'}Respiratory Issue</Text>
+                            <Text style={[styles.gaugeValue, { color: currentColors.textPrimary }]}>{overallRisk}%</Text>
+                            <Text style={[styles.gaugeLabel, { color: currentColors.textSecondary }]}>Probability of{'\n'}Respiratory Issue</Text>
                         </View>
                     </View>
 
-                    <Text style={styles.gaugeDescription}>
+                    <Text style={[styles.gaugeDescription, { color: currentColors.textSecondary }]}>
                         {prediction === 'Healthy'
                             ? 'Your respiratory acoustic signals indicate a stable baseline with no significant abnormalities.'
                             : `AI analysis detected patterns consistent with ${prediction}. Confidence: ${Math.round(confidence * 100)}%.`}
@@ -215,22 +217,22 @@ export default function ResultsScreen() {
                 </View>
 
                 {/* Risk Breakdown */}
-                <Text style={styles.sectionTitle}>Risk Breakdown</Text>
+                <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Risk Breakdown</Text>
 
                 {riskMetrics.map((metric, index) => (
-                    <View key={index} style={styles.riskCard}>
+                    <View key={index} style={[styles.riskCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                         <View style={[styles.riskIcon, { backgroundColor: metric.bgColor }]}>
                             <Ionicons name={metric.icon} size={22} color={metric.color} />
                         </View>
                         <View style={styles.riskContent}>
-                            <Text style={styles.riskName}>{metric.name}</Text>
-                            <Text style={styles.riskDescription}>{metric.description}</Text>
+                            <Text style={[styles.riskName, { color: currentColors.textPrimary }]}>{metric.name}</Text>
+                            <Text style={[styles.riskDescription, { color: currentColors.textSecondary }]}>{metric.description}</Text>
                         </View>
                         <View style={styles.riskRight}>
                             <Text style={[styles.riskLevel, { color: metric.color }]}>
                                 {metric.level} Risk
                             </Text>
-                            <View style={styles.riskBar}>
+                            <View style={[styles.riskBar, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <View
                                     style={[
                                         styles.riskBarFill,
@@ -247,7 +249,7 @@ export default function ResultsScreen() {
 
                 {/* View Report Button */}
                 <TouchableOpacity
-                    style={styles.reportButton}
+                    style={[styles.reportButton, { backgroundColor: currentColors.primary }]}
                     onPress={handleViewReport}
                     disabled={isLoadingReport}
                     activeOpacity={0.85}

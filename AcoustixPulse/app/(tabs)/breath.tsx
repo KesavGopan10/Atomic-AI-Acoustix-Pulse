@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
 import {
     useAudioRecorder,
     AudioModule,
@@ -23,6 +24,7 @@ import {
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { predictAudio } from '@/services/api';
 import { addAnalysis } from '@/services/storage';
+import { useTheme } from '@/context/ThemeContext';
 
 /**
  * Recording strategy:
@@ -45,6 +47,7 @@ const RECORDING_OPTIONS = {
 
 export default function BreathCaptureScreen() {
     const router = useRouter();
+    const { currentColors, isDark } = useTheme();
     const audioRecorder = useAudioRecorder(RECORDING_OPTIONS as any);
     const recorderState = useAudioRecorderState(audioRecorder);
     const [progress, setProgress] = useState(0);
@@ -156,7 +159,7 @@ export default function BreathCaptureScreen() {
             try {
                 const result = await predictAudio(uri, fileName);
                 // Persist to history for home/insights screens
-                addAnalysis({
+                await addAnalysis({
                     prediction: result.prediction,
                     confidence: result.confidence,
                     all_probabilities: result.all_probabilities,
@@ -182,6 +185,49 @@ export default function BreathCaptureScreen() {
         }
     };
 
+    const handleFileUpload = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ['audio/*'],
+                copyToCacheDirectory: true,
+            });
+
+            if (result.canceled || !result.assets || result.assets.length === 0) {
+                return;
+            }
+
+            const file = result.assets[0];
+            setIsAnalyzing(true);
+            setStatusText('Analyzing uploaded file...');
+
+            try {
+                const apiResult = await predictAudio(file.uri, file.name);
+                await addAnalysis({
+                    prediction: apiResult.prediction,
+                    confidence: apiResult.confidence,
+                    all_probabilities: apiResult.all_probabilities,
+                });
+                router.push({
+                    pathname: '/results',
+                    params: {
+                        prediction: apiResult.prediction,
+                        confidence: String(apiResult.confidence),
+                        allProbabilities: JSON.stringify(apiResult.all_probabilities),
+                    },
+                });
+            } catch (apiErr: any) {
+                console.error('Prediction API error on upload:', apiErr);
+                Alert.alert('Analysis Failed', apiErr.message || 'Server could not analyze audio. Please try again.');
+                setStatusText('Analysis failed. Try again.');
+            } finally {
+                setIsAnalyzing(false);
+            }
+        } catch (err: any) {
+            console.error('File selection error:', err);
+            Alert.alert('File Error', 'Failed to pick file.');
+        }
+    };
+
     const handlePress = () => {
         if (recorderState.isRecording) {
             handleStopRecording();
@@ -195,35 +241,39 @@ export default function BreathCaptureScreen() {
     const waveOpacities = [0.4, 0.6, 0.8, 1, 0.8, 0.6, 0.4];
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Initial Breath Capture</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Initial Breath Capture</Text>
                 <View style={{ width: 40 }} />
             </View>
 
             <View style={styles.mainContent}>
                 <View style={styles.brandSection}>
                     <View style={styles.brandBadge}>
-                        <Ionicons name="fitness" size={14} color={Colors.primary} />
-                        <Text style={styles.brandText}>ACOUSTIX PULSE AI</Text>
+                        <Ionicons name="fitness" size={14} color={currentColors.primary} />
+                        <Text style={[styles.brandText, { color: currentColors.primary }]}>ACOUSTIX PULSE AI</Text>
                     </View>
-                    <Text style={styles.instruction}>
+                    <Text style={[styles.instruction, { color: currentColors.textPrimary }]}>
                         Position the microphone{'\n'}and exhale steadily.
                     </Text>
                 </View>
 
-                <View style={styles.visualizerContainer}>
-                    <Animated.View style={[styles.outerRing2, { transform: [{ scale: ringAnim2 }] }]} />
-                    <Animated.View style={[styles.outerRing1, { transform: [{ scale: ringAnim1 }] }]} />
-                    <Animated.View style={[styles.mainCircle, { transform: [{ scale: pulseAnim }] }]}>
-                        <View style={styles.innerCircle}>
+                <View style={[styles.visualizerContainer, { height: 280, width: '100%', maxWidth: 320, aspectRatio: 1 }]}>
+                    <Animated.View style={[styles.outerRing2, { borderColor: isDark ? 'rgba(19,127,236,0.1)' : 'rgba(19,127,236,0.05)', transform: [{ scale: ringAnim2 }] }]} />
+                    <Animated.View style={[styles.outerRing1, { borderColor: isDark ? 'rgba(19,127,236,0.2)' : 'rgba(19,127,236,0.1)', transform: [{ scale: ringAnim1 }] }]} />
+                    <Animated.View style={[styles.mainCircle, {
+                        backgroundColor: isDark ? 'rgba(19,127,236,0.15)' : 'rgba(19,127,236,0.12)',
+                        borderColor: isDark ? 'rgba(19,127,236,0.4)' : 'rgba(19,127,236,0.3)',
+                        transform: [{ scale: pulseAnim }]
+                    }]}>
+                        <View style={[styles.innerCircle, { backgroundColor: isDark ? 'rgba(19,127,236,0.25)' : 'rgba(19,127,236,0.2)' }]}>
                             <Ionicons
                                 name="mic"
                                 size={48}
-                                color={isRecording ? '#22d3ee' : Colors.primary}
+                                color={isRecording ? '#22d3ee' : currentColors.primary}
                             />
                         </View>
                         {isRecording && (
@@ -234,7 +284,7 @@ export default function BreathCaptureScreen() {
                                         style={[styles.waveBar, {
                                             height: waveHeights[i],
                                             opacity: waveOpacities[i],
-                                            backgroundColor: Colors.primary,
+                                            backgroundColor: currentColors.primary,
                                             transform: [{ scaleY: anim }],
                                         }]}
                                     />
@@ -246,29 +296,55 @@ export default function BreathCaptureScreen() {
 
                 <View style={styles.progressSection}>
                     <View style={styles.progressHeader}>
-                        <Text style={styles.progressLabel}>Analysis Progress</Text>
-                        <Text style={styles.progressValue}>{Math.round(progress)}%</Text>
+                        <Text style={[styles.progressLabel, { color: currentColors.textSecondary }]}>Analysis Progress</Text>
+                        <Text style={[styles.progressValue, { color: currentColors.primary }]}>{Math.round(progress)}%</Text>
                     </View>
-                    <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+                    <View style={[styles.progressBarBg, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
+                        <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: currentColors.primary }]} />
                     </View>
-                    <Text style={styles.statusText}>{statusText}</Text>
+                    <Text style={[styles.statusText, { color: currentColors.textSecondary }]}>{statusText}</Text>
                 </View>
 
-                <TouchableOpacity
-                    style={[
-                        styles.actionButton,
-                        isRecording && styles.actionButtonRecording,
-                        isAnalyzing && styles.actionButtonDisabled,
-                    ]}
-                    onPress={handlePress}
-                    disabled={isAnalyzing}
-                    activeOpacity={0.85}
-                >
-                    <Text style={styles.actionButtonText}>
-                        {isAnalyzing ? 'Analyzing...' : isRecording ? 'Stop Recording' : 'Start Test'}
-                    </Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: Spacing.md, width: '100%' }}>
+                    <TouchableOpacity
+                        style={[
+                            styles.actionButton,
+                            { flex: 1, backgroundColor: currentColors.primary },
+                            isRecording && [styles.actionButtonRecording, { backgroundColor: Colors.rose }],
+                            isAnalyzing && styles.actionButtonDisabled,
+                        ]}
+                        onPress={handlePress}
+                        disabled={isAnalyzing}
+                        activeOpacity={0.85}
+                    >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <Ionicons
+                                name={isRecording ? "stop-circle" : "mic"}
+                                size={20}
+                                color={Colors.white}
+                            />
+                            <Text style={styles.actionButtonText}>
+                                {isAnalyzing ? 'Analyzing...' : isRecording ? 'Stop Recording' : 'Record Live'}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+
+                    {!isRecording && !isAnalyzing && (
+                        <TouchableOpacity
+                            style={[
+                                styles.actionButton,
+                                { flex: 1, backgroundColor: 'transparent', borderWidth: 1, borderColor: currentColors.primary, elevation: 0, shadowOpacity: 0 },
+                            ]}
+                            onPress={handleFileUpload}
+                            disabled={isAnalyzing}
+                            activeOpacity={0.85}
+                        >
+                            <Text style={[styles.actionButtonText, { color: currentColors.primary }]}>
+                                Upload
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -291,16 +367,16 @@ const styles = StyleSheet.create({
     },
     brandText: { fontSize: 10, fontWeight: FontWeight.semibold, color: Colors.primary, letterSpacing: 1.5 },
     instruction: { fontSize: FontSize.xxxl, fontWeight: FontWeight.bold, color: Colors.textPrimary, textAlign: 'center', lineHeight: 34, letterSpacing: -0.5 },
-    visualizerContainer: { width: 280, height: 280, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xxxl },
-    outerRing2: { position: 'absolute', width: 280, height: 280, borderRadius: 140, borderWidth: 1, borderColor: 'rgba(19,127,236,0.05)' },
-    outerRing1: { position: 'absolute', width: 240, height: 240, borderRadius: 120, borderWidth: 2, borderColor: 'rgba(19,127,236,0.1)' },
+    visualizerContainer: { width: '100%', maxWidth: 350, aspectRatio: 1, maxHeight: 350, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xxxl },
+    outerRing2: { position: 'absolute', width: '100%', height: '100%', borderRadius: 1000, borderWidth: 1 },
+    outerRing1: { position: 'absolute', width: '85%', height: '85%', borderRadius: 1000, borderWidth: 2 },
     mainCircle: {
-        width: 200, height: 200, borderRadius: 100,
-        backgroundColor: 'rgba(19,127,236,0.12)', alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: 'rgba(19,127,236,0.3)',
+        width: '70%', height: '70%', borderRadius: 1000,
+        alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1,
         shadowColor: Colors.primary, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 25, elevation: 10,
     },
-    innerCircle: { width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(19,127,236,0.2)', alignItems: 'center', justifyContent: 'center' },
+    innerCircle: { width: '70%', height: '70%', borderRadius: 1000, alignItems: 'center', justifyContent: 'center' },
     wavesOverlay: { position: 'absolute', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
     waveBar: { width: 3, borderRadius: 2 },
     progressSection: { width: '100%', gap: Spacing.md, marginBottom: Spacing.xxl },

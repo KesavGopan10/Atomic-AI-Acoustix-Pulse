@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { getAnalyses, getLastAnalysis } from '@/services/storage';
+import { useTheme } from '@/context/ThemeContext';
 
 interface FeatureCardProps {
     icon: keyof typeof Ionicons.glyphMap;
@@ -22,16 +23,17 @@ interface FeatureCardProps {
 }
 
 function FeatureCard({ icon, title, subtitle, color, bgColor, onPress }: FeatureCardProps) {
+    const { currentColors } = useTheme();
     return (
-        <TouchableOpacity style={styles.featureCard} onPress={onPress} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.featureCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]} onPress={onPress} activeOpacity={0.7}>
             <View style={[styles.featureIcon, { backgroundColor: bgColor }]}>
                 <Ionicons name={icon} size={24} color={color} />
             </View>
             <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>{title}</Text>
-                <Text style={styles.featureSubtitle}>{subtitle}</Text>
+                <Text style={[styles.featureTitle, { color: currentColors.textPrimary }]}>{title}</Text>
+                <Text style={[styles.featureSubtitle, { color: currentColors.textSecondary }]}>{subtitle}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.slate500} />
+            <Ionicons name="chevron-forward" size={20} color={currentColors.slate500} />
         </TouchableOpacity>
     );
 }
@@ -45,6 +47,7 @@ function getGreeting(): string {
 
 export default function HomeScreen() {
     const router = useRouter();
+    const { currentColors, isDark } = useTheme();
 
     // Re-render when screen gains focus so stats refresh after a new scan
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
@@ -59,15 +62,15 @@ export default function HomeScreen() {
         : null;
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.greeting}>{getGreeting()}</Text>
-                    <Text style={styles.headerTitle}>Acoustix Pulse</Text>
+                    <Text style={[styles.greeting, { color: currentColors.textSecondary }]}>{getGreeting()}</Text>
+                    <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Acoustix Pulse</Text>
                 </View>
-                <TouchableOpacity style={styles.notifBtn}>
-                    <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+                <TouchableOpacity style={[styles.notifBtn, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                    <Ionicons name="notifications-outline" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
             </View>
 
@@ -78,16 +81,16 @@ export default function HomeScreen() {
             >
                 {/* Hero Card */}
                 <TouchableOpacity
-                    style={styles.heroCard}
+                    style={[styles.heroCard, { backgroundColor: isDark ? 'rgba(19, 127, 236, 0.08)' : 'rgba(19, 127, 236, 0.04)' }]}
                     activeOpacity={0.85}
                     onPress={() => router.push('/(tabs)/breath')}
                 >
                     <View style={styles.heroBadge}>
-                        <Ionicons name="fitness" size={14} color={Colors.primary} />
-                        <Text style={styles.heroBadgeText}>ACOUSTIX PULSE AI</Text>
+                        <Ionicons name="fitness" size={14} color={currentColors.primary} />
+                        <Text style={[styles.heroBadgeText, { color: currentColors.primary }]}>ACOUSTIX PULSE AI</Text>
                     </View>
-                    <Text style={styles.heroTitle}>Respiratory Health Analysis</Text>
-                    <Text style={styles.heroSubtitle}>
+                    <Text style={[styles.heroTitle, { color: currentColors.textPrimary }]}>Respiratory Health Analysis</Text>
+                    <Text style={[styles.heroSubtitle, { color: currentColors.textSecondary }]}>
                         Record a breath sample and let our AI analyze your respiratory patterns in real-time.
                     </Text>
                     <View style={styles.heroButton}>
@@ -98,34 +101,34 @@ export default function HomeScreen() {
 
                 {/* Quick Stats — all from real data */}
                 <View style={styles.statsRow}>
-                    <View style={styles.statCard}>
+                    <View style={[styles.statCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                         <View style={[styles.statDot, {
-                            backgroundColor: !lastAnalysis ? Colors.slate700
+                            backgroundColor: !lastAnalysis ? currentColors.slate700
                                 : lastResult === 'Healthy' ? Colors.emerald : Colors.amber
                         }]} />
-                        <Text style={styles.statValue} numberOfLines={1}>{lastResult}</Text>
-                        <Text style={styles.statLabel}>Last Result</Text>
+                        <Text style={[styles.statValue, { color: currentColors.textPrimary }]} numberOfLines={1}>{lastResult}</Text>
+                        <Text style={[styles.statLabel, { color: currentColors.textSecondary }]}>Last Result</Text>
                     </View>
-                    <View style={styles.statCard}>
-                        <View style={[styles.statDot, { backgroundColor: Colors.primary }]} />
-                        <Text style={styles.statValue}>{totalScans}</Text>
-                        <Text style={styles.statLabel}>Total Scans</Text>
+                    <View style={[styles.statCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                        <View style={[styles.statDot, { backgroundColor: currentColors.primary }]} />
+                        <Text style={[styles.statValue, { color: currentColors.textPrimary }]}>{totalScans}</Text>
+                        <Text style={[styles.statLabel, { color: currentColors.textSecondary }]}>Total Scans</Text>
                     </View>
-                    <View style={styles.statCard}>
+                    <View style={[styles.statCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                         <View style={[styles.statDot, {
-                            backgroundColor: riskScore === null ? Colors.slate700
+                            backgroundColor: riskScore === null ? currentColors.slate700
                                 : riskScore < 30 ? Colors.emerald
                                     : riskScore < 60 ? Colors.amber : Colors.rose
                         }]} />
-                        <Text style={styles.statValue}>
+                        <Text style={[styles.statValue, { color: currentColors.textPrimary }]}>
                             {riskScore === null ? '—' : `${riskScore}%`}
                         </Text>
-                        <Text style={styles.statLabel}>Risk Score</Text>
+                        <Text style={[styles.statLabel, { color: currentColors.textSecondary }]}>Risk Score</Text>
                     </View>
                 </View>
 
                 {/* Section: Features */}
-                <Text style={styles.sectionTitle}>Diagnostic Tools</Text>
+                <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Diagnostic Tools</Text>
 
                 <FeatureCard
                     icon="mic"

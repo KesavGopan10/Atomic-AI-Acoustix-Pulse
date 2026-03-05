@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { getAnalyses, AnalysisRecord } from '@/services/storage';
 import { useFocusEffect } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 function formatTime(ts: number): string {
     const d = new Date(ts);
@@ -41,6 +42,7 @@ function getRiskBg(prediction: string): string {
 }
 
 export default function InsightsScreen() {
+    const { currentColors, isDark } = useTheme();
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
     useFocusEffect(useCallback(() => { forceUpdate(); }, []));
 
@@ -61,7 +63,7 @@ export default function InsightsScreen() {
         : lastRisk < 30 ? 'Low'
             : lastRisk < 60 ? 'Moderate'
                 : 'High';
-    const riskColor = lastRisk === null ? Colors.textSecondary
+    const riskColor = lastRisk === null ? currentColors.textSecondary
         : lastRisk < 30 ? Colors.emerald
             : lastRisk < 60 ? Colors.amber
                 : Colors.rose;
@@ -72,9 +74,9 @@ export default function InsightsScreen() {
     const hasData = totalScans > 0;
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Insights</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Insights</Text>
             </View>
 
             <ScrollView
@@ -83,37 +85,37 @@ export default function InsightsScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 {/* Overview Card */}
-                <View style={styles.overviewCard}>
-                    <Text style={styles.overviewTitle}>Health Overview</Text>
-                    <Text style={styles.overviewSubtitle}>
+                <View style={[styles.overviewCard, { backgroundColor: isDark ? 'rgba(19,127,236,0.08)' : 'rgba(19,127,236,0.04)' }]}>
+                    <Text style={[styles.overviewTitle, { color: currentColors.textPrimary }]}>Health Overview</Text>
+                    <Text style={[styles.overviewSubtitle, { color: currentColors.textSecondary }]}>
                         {hasData ? 'Based on your recorded analyses' : 'Complete your first analysis to see insights'}
                     </Text>
 
                     <View style={styles.overviewStats}>
                         <View style={styles.overviewStat}>
-                            <Text style={styles.overviewStatValue}>
+                            <Text style={[styles.overviewStatValue, { color: currentColors.primary }]}>
                                 {avgHealthy !== null ? `${avgHealthy}%` : '—'}
                             </Text>
-                            <Text style={styles.overviewStatLabel}>Overall Health</Text>
+                            <Text style={[styles.overviewStatLabel, { color: currentColors.textSecondary }]}>Overall Health</Text>
                         </View>
-                        <View style={styles.overviewDivider} />
+                        <View style={[styles.overviewDivider, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]} />
                         <View style={styles.overviewStat}>
-                            <Text style={styles.overviewStatValue}>{totalScans}</Text>
-                            <Text style={styles.overviewStatLabel}>Tests Done</Text>
+                            <Text style={[styles.overviewStatValue, { color: currentColors.primary }]}>{totalScans}</Text>
+                            <Text style={[styles.overviewStatLabel, { color: currentColors.textSecondary }]}>Tests Done</Text>
                         </View>
-                        <View style={styles.overviewDivider} />
+                        <View style={[styles.overviewDivider, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]} />
                         <View style={styles.overviewStat}>
                             <Text style={[styles.overviewStatValue, { color: riskColor }]}>{riskLabel}</Text>
-                            <Text style={styles.overviewStatLabel}>Risk Level</Text>
+                            <Text style={[styles.overviewStatLabel, { color: currentColors.textSecondary }]}>Risk Level</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* Trend Chart */}
                 {hasData ? (
-                    <View style={styles.trendCard}>
+                    <View style={[styles.trendCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                         <View style={styles.trendHeader}>
-                            <Text style={styles.trendTitle}>Respiratory Health Trend</Text>
+                            <Text style={[styles.trendTitle, { color: currentColors.textPrimary }]}>Respiratory Health Trend</Text>
                             <View style={[styles.trendBadge, { backgroundColor: riskLabel === 'Low' ? Colors.emeraldBg : Colors.amberBg }]}>
                                 <Text style={[styles.trendBadgeText, { color: riskLabel === 'Low' ? Colors.emerald : Colors.amber }]}>
                                     {riskLabel}
@@ -128,39 +130,39 @@ export default function InsightsScreen() {
                                 const clr = healthyPct > 0.7 ? Colors.emerald : healthyPct > 0.4 ? Colors.amber : Colors.rose;
                                 return (
                                     <View key={i} style={styles.chartBarWrapper}>
-                                        <View style={[styles.chartBar, { height: barH, backgroundColor: clr }]} />
+                                        <View style={[styles.chartBar, { height: `${barH}%`, backgroundColor: clr }]} />
                                     </View>
                                 );
                             })}
                         </View>
 
                         <View style={styles.chartLabels}>
-                            <Text style={styles.chartLabel}>Oldest</Text>
-                            <Text style={[styles.chartLabel, { fontWeight: FontWeight.bold }]}>Latest</Text>
+                            <Text style={[styles.chartLabel, { color: currentColors.textSecondary }]}>Oldest</Text>
+                            <Text style={[styles.chartLabel, { fontWeight: FontWeight.bold, color: currentColors.textSecondary }]}>Latest</Text>
                         </View>
                     </View>
                 ) : null}
 
                 {/* Recent Analyses */}
-                <Text style={styles.sectionTitle}>Recent Analyses</Text>
+                <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Recent Analyses</Text>
 
                 {!hasData ? (
                     <View style={styles.emptyState}>
-                        <Ionicons name="mic-outline" size={48} color={Colors.slate600} />
-                        <Text style={styles.emptyTitle}>No analyses yet</Text>
-                        <Text style={styles.emptySubtitle}>
+                        <Ionicons name="mic-outline" size={48} color={currentColors.slate600} />
+                        <Text style={[styles.emptyTitle, { color: currentColors.textSecondary }]}>No analyses yet</Text>
+                        <Text style={[styles.emptySubtitle, { color: currentColors.slate600 }]}>
                             Go to the Breath tab and record your first sample to see your results here.
                         </Text>
                     </View>
                 ) : (
                     analyses.map((a, i) => (
-                        <View key={i} style={styles.analysisCard}>
+                        <View key={i} style={[styles.analysisCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                             <View style={[styles.analysisIcon, { backgroundColor: getRiskBg(a.prediction) }]}>
                                 <Ionicons name={getRiskIcon(a.prediction)} size={20} color={getRiskColor(a.prediction)} />
                             </View>
                             <View style={styles.analysisContent}>
-                                <Text style={styles.analysisTitle}>{a.prediction} Classification</Text>
-                                <Text style={styles.analysisDate}>
+                                <Text style={[styles.analysisTitle, { color: currentColors.textPrimary }]}>{a.prediction} Classification</Text>
+                                <Text style={[styles.analysisDate, { color: currentColors.textSecondary }]}>
                                     {formatTime(a.timestamp)} • {Math.round(a.confidence * 100)}% confidence
                                 </Text>
                             </View>

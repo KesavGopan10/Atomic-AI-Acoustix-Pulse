@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function HeartResultsScreen() {
     const router = useRouter();
@@ -18,6 +19,7 @@ export default function HeartResultsScreen() {
 
     const triage = params.triage ? JSON.parse(params.triage as string) : {};
     const diagnosis = params.diagnosis ? JSON.parse(params.diagnosis as string) : {};
+    const { currentColors, isDark } = useTheme();
     const report = (params.report as string) || '';
 
     const urgency = triage.urgency_level || triage.urgency || 'Low';
@@ -33,41 +35,41 @@ export default function HeartResultsScreen() {
     const reportLines = report ? report.split('\n').filter((l: string) => l.trim()) : [];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Heart Analysis Results</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Heart Analysis Results</Text>
                 <TouchableOpacity
                     style={styles.headerBtn}
                     onPress={() =>
                         Share.share({ message: `Heart Analysis Report\n\n${report}`, title: 'Heart Risk Report' })
                     }
                 >
-                    <Ionicons name="share-outline" size={22} color={Colors.primary} />
+                    <Ionicons name="share-outline" size={22} color={currentColors.primary} />
                 </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Urgency Card */}
-                <View style={[styles.urgencyCard, { borderColor: getUrgencyColor(urgency) + '40' }]}>
+                <View style={[styles.urgencyCard, { backgroundColor: currentColors.cardDark, borderColor: getUrgencyColor(urgency) + '40' }]}>
                     <View style={[styles.urgencyIcon, { backgroundColor: getUrgencyColor(urgency) + '20' }]}>
                         <Ionicons name="heart" size={28} color={getUrgencyColor(urgency)} />
                     </View>
                     <Text style={[styles.urgencyLevel, { color: getUrgencyColor(urgency) }]}>{urgency}</Text>
-                    <Text style={styles.urgencyLabel}>Urgency Level</Text>
+                    <Text style={[styles.urgencyLabel, { color: currentColors.textSecondary }]}>Urgency Level</Text>
                 </View>
 
                 {/* Triage Summary */}
                 {Object.keys(triage).length > 0 && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Triage Assessment</Text>
-                        <View style={styles.card}>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Triage Assessment</Text>
+                        <View style={[styles.card, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                             {Object.entries(triage).map(([key, value], i) => (
-                                <View key={i} style={styles.dataRow}>
-                                    <Text style={styles.dataLabel}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-                                    <Text style={styles.dataValue}>
+                                <View key={i} style={[styles.dataRow, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
+                                    <Text style={[styles.dataLabel, { color: currentColors.textSecondary }]}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                                    <Text style={[styles.dataValue, { color: currentColors.textPrimary }]}>
                                         {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                                     </Text>
                                 </View>
@@ -79,12 +81,12 @@ export default function HeartResultsScreen() {
                 {/* Diagnosis Summary */}
                 {Object.keys(diagnosis).length > 0 && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Diagnosis</Text>
-                        <View style={styles.card}>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Diagnosis</Text>
+                        <View style={[styles.card, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                             {Object.entries(diagnosis).map(([key, value], i) => (
-                                <View key={i} style={styles.dataRow}>
-                                    <Text style={styles.dataLabel}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-                                    <Text style={styles.dataValue}>
+                                <View key={i} style={[styles.dataRow, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
+                                    <Text style={[styles.dataLabel, { color: currentColors.textSecondary }]}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                                    <Text style={[styles.dataValue, { color: currentColors.textPrimary }]}>
                                         {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                                     </Text>
                                 </View>
@@ -96,20 +98,20 @@ export default function HeartResultsScreen() {
                 {/* Full Report */}
                 {report ? (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Full Report</Text>
-                        <View style={styles.reportCard}>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Full Report</Text>
+                        <View style={[styles.reportCard, { backgroundColor: isDark ? 'rgba(19,127,236,0.05)' : 'rgba(19,127,236,0.03)', borderColor: isDark ? 'rgba(19,127,236,0.2)' : 'rgba(19,127,236,0.1)' }]}>
                             {reportLines.map((line: string, i: number) => {
                                 const t = line.trim();
-                                if (t.startsWith('# ')) return <Text key={i} style={styles.rH1}>{t.replace(/^#+\s*/, '')}</Text>;
-                                if (t.startsWith('## ')) return <Text key={i} style={styles.rH2}>{t.replace(/^#+\s*/, '')}</Text>;
-                                if (t.startsWith('### ')) return <Text key={i} style={styles.rH3}>{t.replace(/^#+\s*/, '')}</Text>;
+                                if (t.startsWith('# ')) return <Text key={i} style={[styles.rH1, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
+                                if (t.startsWith('## ')) return <Text key={i} style={[styles.rH2, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
+                                if (t.startsWith('### ')) return <Text key={i} style={[styles.rH3, { color: currentColors.primary }]}>{t.replace(/^#+\s*/, '')}</Text>;
                                 if (t.startsWith('- ') || t.startsWith('* ')) return (
                                     <View key={i} style={styles.bulletRow}>
-                                        <Text style={styles.bullet}>•</Text>
-                                        <Text style={styles.rText}>{t.slice(2).replace(/\*\*/g, '')}</Text>
+                                        <Text style={[styles.bullet, { color: currentColors.primary }]}>•</Text>
+                                        <Text style={[styles.rText, { color: currentColors.textSecondary }]}>{t.slice(2).replace(/\*\*/g, '')}</Text>
                                     </View>
                                 );
-                                return <Text key={i} style={styles.rText}>{t.replace(/\*\*/g, '')}</Text>;
+                                return <Text key={i} style={[styles.rText, { color: currentColors.textSecondary }]}>{t.replace(/\*\*/g, '')}</Text>;
                             })}
                         </View>
                     </View>

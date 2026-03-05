@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { checkDrugs, DrugCheckResponse } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function DrugCheckScreen() {
     const router = useRouter();
@@ -22,6 +23,7 @@ export default function DrugCheckScreen() {
     const [age, setAge] = useState('');
     const [allergies, setAllergies] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const { currentColors, isDark } = useTheme();
     const [result, setResult] = useState<DrugCheckResponse | null>(null);
 
     const addMedication = () => setMedications([...medications, '']);
@@ -62,12 +64,12 @@ export default function DrugCheckScreen() {
     const reportLines = result?.report ? result.report.split('\n').filter((l: string) => l.trim()) : [];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Drug Interactions</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Drug Interactions</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -75,25 +77,25 @@ export default function DrugCheckScreen() {
                 {!result ? (
                     <>
                         <View style={styles.heroSection}>
-                            <View style={[styles.heroIcon, { backgroundColor: 'rgba(168,85,247,0.1)' }]}>
+                            <View style={[styles.heroIcon, { backgroundColor: isDark ? 'rgba(168,85,247,0.15)' : 'rgba(168,85,247,0.1)' }]}>
                                 <Ionicons name="medkit" size={28} color="#a855f7" />
                             </View>
-                            <Text style={styles.heroTitle}>Medication Safety Check</Text>
-                            <Text style={styles.heroSubtitle}>
+                            <Text style={[styles.heroTitle, { color: currentColors.textPrimary }]}>Medication Safety Check</Text>
+                            <Text style={[styles.heroSubtitle, { color: currentColors.textSecondary }]}>
                                 Enter your medications to check for interactions, warnings, and contraindications.
                             </Text>
                         </View>
 
-                        <View style={styles.formCard}>
-                            <Text style={styles.fieldLabel}>Medications</Text>
+                        <View style={[styles.formCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Medications</Text>
                             {medications.map((med, i) => (
                                 <View key={i} style={styles.medRow}>
                                     <TextInput
-                                        style={[styles.textInput, { flex: 1 }]}
+                                        style={[styles.textInput, { flex: 1, backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                         value={med}
                                         onChangeText={(val) => updateMedication(i, val)}
                                         placeholder={`Medication ${i + 1}`}
-                                        placeholderTextColor={Colors.textMuted}
+                                        placeholderTextColor={currentColors.textSecondary}
                                     />
                                     {medications.length > 1 && (
                                         <TouchableOpacity style={styles.removeBtn} onPress={() => removeMedication(i)}>
@@ -103,40 +105,40 @@ export default function DrugCheckScreen() {
                                 </View>
                             ))}
                             <TouchableOpacity style={styles.addBtn} onPress={addMedication}>
-                                <Ionicons name="add-circle" size={20} color={Colors.primary} />
-                                <Text style={styles.addBtnText}>Add Medication</Text>
+                                <Ionicons name="add-circle" size={20} color={currentColors.primary} />
+                                <Text style={[styles.addBtnText, { color: currentColors.primary }]}>Add Medication</Text>
                             </TouchableOpacity>
 
-                            <Text style={[styles.fieldLabel, { marginTop: Spacing.xl }]}>Condition (optional)</Text>
+                            <Text style={[styles.fieldLabel, { marginTop: Spacing.xl, color: currentColors.textPrimary }]}>Condition (optional)</Text>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                 value={condition}
                                 onChangeText={setCondition}
                                 placeholder="e.g., COPD, Heart Failure"
-                                placeholderTextColor={Colors.textMuted}
+                                placeholderTextColor={currentColors.textSecondary}
                             />
 
                             <View style={styles.rowFields}>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={styles.fieldLabel}>Age (optional)</Text>
+                                    <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Age (optional)</Text>
                                     <TextInput
-                                        style={styles.textInput}
+                                        style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                         value={age}
                                         onChangeText={setAge}
                                         keyboardType="number-pad"
                                         placeholder="Age"
-                                        placeholderTextColor={Colors.textMuted}
+                                        placeholderTextColor={currentColors.textSecondary}
                                     />
                                 </View>
                             </View>
 
-                            <Text style={styles.fieldLabel}>Allergies (optional, comma-separated)</Text>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Allergies (optional, comma-separated)</Text>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                 value={allergies}
                                 onChangeText={setAllergies}
                                 placeholder="e.g., Penicillin, Sulfa"
-                                placeholderTextColor={Colors.textMuted}
+                                placeholderTextColor={currentColors.textSecondary}
                             />
                         </View>
 
@@ -159,26 +161,26 @@ export default function DrugCheckScreen() {
                 ) : (
                     <>
                         <View style={styles.resultHeader}>
-                            <Text style={styles.sectionTitle}>Results</Text>
+                            <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Results</Text>
                             <TouchableOpacity onPress={() => setResult(null)}>
-                                <Text style={styles.newCheckText}>New Check</Text>
+                                <Text style={[styles.newCheckText, { color: currentColors.primary }]}>New Check</Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Safety Summary */}
-                        <View style={styles.summaryCard}>
+                        <View style={[styles.summaryCard, { backgroundColor: isDark ? currentColors.emeraldBg : 'rgba(16, 185, 129, 0.05)', borderColor: isDark ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)' }]}>
                             <Ionicons name="shield-checkmark" size={24} color={Colors.emerald} />
-                            <Text style={styles.summaryText}>{result.safe_summary}</Text>
+                            <Text style={[styles.summaryText, { color: currentColors.textPrimary }]}>{result.safe_summary}</Text>
                         </View>
 
                         {/* Interactions */}
                         {result.interactions.length > 0 && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Interactions</Text>
+                                <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Interactions</Text>
                                 {result.interactions.map((interaction, i) => (
-                                    <View key={i} style={styles.interactionCard}>
+                                    <View key={i} style={[styles.interactionCard, { backgroundColor: isDark ? currentColors.amberBg : 'rgba(245, 158, 11, 0.05)', borderColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)' }]}>
                                         <Ionicons name="warning" size={20} color={Colors.amber} />
-                                        <Text style={styles.interactionText}>
+                                        <Text style={[styles.interactionText, { color: currentColors.textPrimary }]}>
                                             {typeof interaction === 'object' ? JSON.stringify(interaction) : String(interaction)}
                                         </Text>
                                     </View>
@@ -189,11 +191,11 @@ export default function DrugCheckScreen() {
                         {/* Warnings */}
                         {result.warnings.length > 0 && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Warnings</Text>
+                                <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Warnings</Text>
                                 {result.warnings.map((warning, i) => (
-                                    <View key={i} style={styles.warningCard}>
+                                    <View key={i} style={[styles.warningCard, { backgroundColor: isDark ? currentColors.roseBg : 'rgba(244, 63, 94, 0.05)', borderColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.1)' }]}>
                                         <Ionicons name="alert-circle" size={20} color={Colors.rose} />
-                                        <Text style={styles.warningText}>
+                                        <Text style={[styles.warningText, { color: currentColors.textPrimary }]}>
                                             {typeof warning === 'object' ? JSON.stringify(warning) : String(warning)}
                                         </Text>
                                     </View>
@@ -203,19 +205,19 @@ export default function DrugCheckScreen() {
 
                         {/* Full Report */}
                         {reportLines.length > 0 && (
-                            <View style={styles.reportCard}>
-                                <Text style={styles.reportTitle}>Full Report</Text>
+                            <View style={[styles.reportCard, { backgroundColor: isDark ? 'rgba(168,85,247,0.05)' : 'rgba(168,85,247,0.03)', borderColor: isDark ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.1)' }]}>
+                                <Text style={[styles.reportTitle, { color: currentColors.textPrimary }]}>Full Report</Text>
                                 {reportLines.map((line: string, i: number) => {
                                     const t = line.trim();
-                                    if (t.startsWith('# ')) return <Text key={i} style={styles.rH1}>{t.replace(/^#+\s*/, '')}</Text>;
-                                    if (t.startsWith('## ')) return <Text key={i} style={styles.rH2}>{t.replace(/^#+\s*/, '')}</Text>;
+                                    if (t.startsWith('# ')) return <Text key={i} style={[styles.rH1, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
+                                    if (t.startsWith('## ')) return <Text key={i} style={[styles.rH2, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
                                     if (t.startsWith('- ')) return (
                                         <View key={i} style={{ flexDirection: 'row', gap: 8, paddingLeft: 8 }}>
-                                            <Text style={{ color: Colors.primary, lineHeight: 22 }}>•</Text>
-                                            <Text style={styles.rText}>{t.slice(2).replace(/\*\*/g, '')}</Text>
+                                            <Text style={{ color: currentColors.primary, lineHeight: 22 }}>•</Text>
+                                            <Text style={[styles.rText, { color: currentColors.textSecondary }]}>{t.slice(2).replace(/\*\*/g, '')}</Text>
                                         </View>
                                     );
-                                    return <Text key={i} style={styles.rText}>{t.replace(/\*\*/g, '')}</Text>;
+                                    return <Text key={i} style={[styles.rText, { color: currentColors.textSecondary }]}>{t.replace(/\*\*/g, '')}</Text>;
                                 })}
                             </View>
                         )}

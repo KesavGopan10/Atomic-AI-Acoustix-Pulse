@@ -12,9 +12,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { setProfile } from '@/services/storage';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function ProfileScreen() {
     const router = useRouter();
+    const { isDark, toggleTheme, currentColors } = useTheme();
     const [age, setAge] = useState(28);
     const [height, setHeight] = useState(178);
     const [weight, setWeight] = useState(75);
@@ -24,12 +26,17 @@ export default function ProfileScreen() {
     const displayWeight = weightUnit === 'lbs' ? Math.round(weight * 2.20462) : weight;
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>User Biometrics</Text>
-                <TouchableOpacity style={styles.editBtn}>
-                    <Ionicons name="create-outline" size={20} color={Colors.primary} />
-                </TouchableOpacity>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>User Biometrics</Text>
+                <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+                    <TouchableOpacity style={[styles.editBtn, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]} onPress={toggleTheme}>
+                        <Ionicons name={isDark ? "sunny-outline" : "moon-outline"} size={20} color={currentColors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.editBtn, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                        <Ionicons name="create-outline" size={20} color={currentColors.primary} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <ScrollView
@@ -40,34 +47,34 @@ export default function ProfileScreen() {
                 {/* Hero */}
                 <View style={styles.heroSection}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="fitness" size={36} color={Colors.primary} />
+                        <Ionicons name="fitness" size={36} color={currentColors.primary} />
                     </View>
-                    <Text style={styles.heroTitle}>Personalize Your Health Signals</Text>
-                    <Text style={styles.heroSubtitle}>
+                    <Text style={[styles.heroTitle, { color: currentColors.textPrimary }]}>Personalize Your Health Signals</Text>
+                    <Text style={[styles.heroSubtitle, { color: currentColors.textSecondary }]}>
                         Provide your biometrics to help Acoustix Pulse calibrate its respiratory monitoring AI.
                     </Text>
                 </View>
 
                 {/* Form Card */}
-                <View style={styles.formCard}>
+                <View style={[styles.formCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                     {/* Age */}
                     <View style={styles.formSection}>
-                        <Text style={styles.formLabel}>Age</Text>
+                        <Text style={[styles.formLabel, { color: currentColors.textPrimary }]}>Age</Text>
                         <View style={styles.ageSelector}>
                             <TouchableOpacity
-                                style={styles.ageOption}
+                                style={[styles.ageOption, { borderColor: currentColors.cardBorder }]}
                                 onPress={() => setAge(Math.max(1, age - 1))}
                             >
-                                <Text style={styles.ageOptionText}>{age - 1}</Text>
+                                <Text style={[styles.ageOptionText, { color: currentColors.textSecondary }]}>{age - 1}</Text>
                             </TouchableOpacity>
-                            <View style={styles.ageOptionActive}>
-                                <Text style={styles.ageOptionActiveText}>{age}</Text>
+                            <View style={[styles.ageOptionActive, { backgroundColor: currentColors.primaryLight, borderColor: currentColors.primary }]}>
+                                <Text style={[styles.ageOptionActiveText, { color: currentColors.primary }]}>{age}</Text>
                             </View>
                             <TouchableOpacity
-                                style={styles.ageOption}
+                                style={[styles.ageOption, { borderColor: currentColors.cardBorder }]}
                                 onPress={() => setAge(Math.min(120, age + 1))}
                             >
-                                <Text style={styles.ageOptionText}>{age + 1}</Text>
+                                <Text style={[styles.ageOptionText, { color: currentColors.textSecondary }]}>{age + 1}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -75,24 +82,24 @@ export default function ProfileScreen() {
                     {/* Height */}
                     <View style={styles.formSection}>
                         <View style={styles.formLabelRow}>
-                            <Text style={styles.formLabel}>Height</Text>
-                            <View style={styles.unitToggle}>
+                            <Text style={[styles.formLabel, { color: currentColors.textPrimary }]}>Height</Text>
+                            <View style={[styles.unitToggle, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <TouchableOpacity
-                                    style={[styles.unitBtn, heightUnit === 'cm' && styles.unitBtnActive]}
+                                    style={[styles.unitBtn, heightUnit === 'cm' && [styles.unitBtnActive, { backgroundColor: isDark ? currentColors.slate700 : currentColors.white }]]}
                                     onPress={() => setHeightUnit('cm')}
                                 >
                                     <Text
-                                        style={[styles.unitBtnText, heightUnit === 'cm' && styles.unitBtnTextActive]}
+                                        style={[styles.unitBtnText, heightUnit === 'cm' ? [styles.unitBtnTextActive, { color: currentColors.textPrimary }] : { color: currentColors.textSecondary }]}
                                     >
                                         cm
                                     </Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.unitBtn, heightUnit === 'ft' && styles.unitBtnActive]}
+                                    style={[styles.unitBtn, heightUnit === 'ft' && [styles.unitBtnActive, { backgroundColor: isDark ? currentColors.slate700 : currentColors.white }]]}
                                     onPress={() => setHeightUnit('ft')}
                                 >
                                     <Text
-                                        style={[styles.unitBtnText, heightUnit === 'ft' && styles.unitBtnTextActive]}
+                                        style={[styles.unitBtnText, heightUnit === 'ft' ? [styles.unitBtnTextActive, { color: currentColors.textPrimary }] : { color: currentColors.textSecondary }]}
                                     >
                                         ft
                                     </Text>
@@ -102,17 +109,17 @@ export default function ProfileScreen() {
 
                         <View style={styles.sliderSection}>
                             <View style={styles.sliderValues}>
-                                <Text style={styles.sliderMin}>140cm</Text>
-                                <Text style={styles.sliderCurrent}>
+                                <Text style={[styles.sliderMin, { color: currentColors.textSecondary }]}>140cm</Text>
+                                <Text style={[styles.sliderCurrent, { color: currentColors.primary }]}>
                                     {height} <Text style={styles.sliderUnit}>cm</Text>
                                 </Text>
-                                <Text style={styles.sliderMax}>220cm</Text>
+                                <Text style={[styles.sliderMax, { color: currentColors.textSecondary }]}>220cm</Text>
                             </View>
-                            <View style={styles.sliderTrack}>
+                            <View style={[styles.sliderTrack, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <View
                                     style={[
                                         styles.sliderFill,
-                                        { width: `${((height - 140) / 80) * 100}%` },
+                                        { width: `${((height - 140) / 80) * 100}%`, backgroundColor: currentColors.primary },
                                     ]}
                                 />
                             </View>
@@ -122,23 +129,24 @@ export default function ProfileScreen() {
                                         key={i}
                                         style={[
                                             styles.rulerMark,
-                                            i % 4 === 0 && styles.rulerMarkMajor,
+                                            { backgroundColor: isDark ? currentColors.slate700 : currentColors.slate300 },
+                                            i % 4 === 0 && [styles.rulerMarkMajor, { backgroundColor: isDark ? currentColors.slate600 : currentColors.slate400 }],
                                         ]}
                                     />
                                 ))}
                             </View>
                             <View style={styles.sliderButtons}>
                                 <TouchableOpacity
-                                    style={styles.adjustBtn}
+                                    style={[styles.adjustBtn, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}
                                     onPress={() => setHeight(Math.max(140, height - 1))}
                                 >
-                                    <Ionicons name="remove" size={18} color={Colors.textPrimary} />
+                                    <Ionicons name="remove" size={18} color={currentColors.textPrimary} />
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={styles.adjustBtn}
+                                    style={[styles.adjustBtn, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}
                                     onPress={() => setHeight(Math.min(220, height + 1))}
                                 >
-                                    <Ionicons name="add" size={18} color={Colors.textPrimary} />
+                                    <Ionicons name="add" size={18} color={currentColors.textPrimary} />
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -147,24 +155,24 @@ export default function ProfileScreen() {
                     {/* Weight */}
                     <View style={styles.formSection}>
                         <View style={styles.formLabelRow}>
-                            <Text style={styles.formLabel}>Weight</Text>
-                            <View style={styles.unitToggle}>
+                            <Text style={[styles.formLabel, { color: currentColors.textPrimary }]}>Weight</Text>
+                            <View style={[styles.unitToggle, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <TouchableOpacity
-                                    style={[styles.unitBtn, weightUnit === 'kg' && styles.unitBtnActive]}
+                                    style={[styles.unitBtn, weightUnit === 'kg' && [styles.unitBtnActive, { backgroundColor: isDark ? currentColors.slate700 : currentColors.white }]]}
                                     onPress={() => setWeightUnit('kg')}
                                 >
                                     <Text
-                                        style={[styles.unitBtnText, weightUnit === 'kg' && styles.unitBtnTextActive]}
+                                        style={[styles.unitBtnText, weightUnit === 'kg' ? [styles.unitBtnTextActive, { color: currentColors.textPrimary }] : { color: currentColors.textSecondary }]}
                                     >
                                         kg
                                     </Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.unitBtn, weightUnit === 'lbs' && styles.unitBtnActive]}
+                                    style={[styles.unitBtn, weightUnit === 'lbs' && [styles.unitBtnActive, { backgroundColor: isDark ? currentColors.slate700 : currentColors.white }]]}
                                     onPress={() => setWeightUnit('lbs')}
                                 >
                                     <Text
-                                        style={[styles.unitBtnText, weightUnit === 'lbs' && styles.unitBtnTextActive]}
+                                        style={[styles.unitBtnText, weightUnit === 'lbs' ? [styles.unitBtnTextActive, { color: currentColors.textPrimary }] : { color: currentColors.textSecondary }]}
                                     >
                                         lbs
                                     </Text>
@@ -174,13 +182,13 @@ export default function ProfileScreen() {
 
                         <View style={styles.sliderSection}>
                             <View style={styles.sliderValues}>
-                                <Text style={styles.sliderMin}>30{weightUnit}</Text>
-                                <Text style={styles.sliderCurrent}>
+                                <Text style={[styles.sliderMin, { color: currentColors.textSecondary }]}>30{weightUnit}</Text>
+                                <Text style={[styles.sliderCurrent, { color: currentColors.primary }]}>
                                     {displayWeight} <Text style={styles.sliderUnit}>{weightUnit}</Text>
                                 </Text>
-                                <Text style={styles.sliderMax}>200{weightUnit}</Text>
+                                <Text style={[styles.sliderMax, { color: currentColors.textSecondary }]}>200{weightUnit}</Text>
                             </View>
-                            <View style={styles.sliderTrack}>
+                            <View style={[styles.sliderTrack, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <View
                                     style={[
                                         styles.sliderFill,
@@ -189,6 +197,7 @@ export default function ProfileScreen() {
                                                 ? ((weight - 30) / 170) * 100
                                                 : ((displayWeight - 66) / 374) * 100
                                                 }%`,
+                                            backgroundColor: currentColors.primary
                                         },
                                     ]}
                                 />
@@ -199,23 +208,24 @@ export default function ProfileScreen() {
                                         key={i}
                                         style={[
                                             styles.rulerMark,
-                                            i % 4 === 0 && styles.rulerMarkMajor,
+                                            { backgroundColor: isDark ? currentColors.slate700 : currentColors.slate300 },
+                                            i % 4 === 0 && [styles.rulerMarkMajor, { backgroundColor: isDark ? currentColors.slate600 : currentColors.slate400 }],
                                         ]}
                                     />
                                 ))}
                             </View>
                             <View style={styles.sliderButtons}>
                                 <TouchableOpacity
-                                    style={styles.adjustBtn}
+                                    style={[styles.adjustBtn, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}
                                     onPress={() => setWeight(Math.max(30, weight - 1))}
                                 >
-                                    <Ionicons name="remove" size={18} color={Colors.textPrimary} />
+                                    <Ionicons name="remove" size={18} color={currentColors.textPrimary} />
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={styles.adjustBtn}
+                                    style={[styles.adjustBtn, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}
                                     onPress={() => setWeight(Math.min(200, weight + 1))}
                                 >
-                                    <Ionicons name="add" size={18} color={Colors.textPrimary} />
+                                    <Ionicons name="add" size={18} color={currentColors.textPrimary} />
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -226,8 +236,8 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                     style={styles.continueButton}
                     activeOpacity={0.85}
-                    onPress={() => {
-                        setProfile({ age, height, weight });
+                    onPress={async () => {
+                        await setProfile({ age, height, weight });
                         router.push('/(tabs)/breath');
                     }}
                 >

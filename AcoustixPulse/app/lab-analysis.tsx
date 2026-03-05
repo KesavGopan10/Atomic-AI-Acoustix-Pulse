@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { analyzeLabReport, LabReportResponse } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 
 const reportTypes = [
     { value: 'general', label: 'General', icon: 'document-text' as const },
@@ -28,6 +29,7 @@ const reportTypes = [
 
 export default function LabAnalysisScreen() {
     const router = useRouter();
+    const { currentColors, isDark } = useTheme();
     const [selectedType, setSelectedType] = useState('general');
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<LabReportResponse | null>(null);
@@ -91,12 +93,12 @@ export default function LabAnalysisScreen() {
     const reportLines = result?.report ? result.report.split('\n').filter((l: string) => l.trim()) : [];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Lab Report Analysis</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Lab Report Analysis</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -104,43 +106,43 @@ export default function LabAnalysisScreen() {
                 {!result ? (
                     <>
                         <View style={styles.heroSection}>
-                            <View style={[styles.heroIcon, { backgroundColor: 'rgba(6,182,212,0.1)' }]}>
+                            <View style={[styles.heroIcon, { backgroundColor: isDark ? 'rgba(6,182,212,0.15)' : 'rgba(6,182,212,0.1)' }]}>
                                 <Ionicons name="document-text" size={28} color="#06b6d4" />
                             </View>
-                            <Text style={styles.heroTitle}>Upload Lab Report</Text>
-                            <Text style={styles.heroSubtitle}>
+                            <Text style={[styles.heroTitle, { color: currentColors.textPrimary }]}>Upload Lab Report</Text>
+                            <Text style={[styles.heroSubtitle, { color: currentColors.textSecondary }]}>
                                 Take a photo of your lab report and get AI-powered analysis with extracted values and interpretation.
                             </Text>
                         </View>
 
-                        <Text style={styles.sectionTitle}>Report Type</Text>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Report Type</Text>
                         <View style={styles.typeGrid}>
                             {reportTypes.map((rt) => (
                                 <TouchableOpacity
                                     key={rt.value}
-                                    style={[styles.typeCard, selectedType === rt.value && styles.typeCardActive]}
+                                    style={[styles.typeCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }, selectedType === rt.value && { borderColor: '#06b6d4', borderWidth: 2, backgroundColor: 'rgba(6,182,212,0.08)' }]}
                                     onPress={() => setSelectedType(rt.value)}
                                 >
-                                    <Ionicons name={rt.icon} size={20} color={selectedType === rt.value ? '#06b6d4' : Colors.textSecondary} />
-                                    <Text style={[styles.typeLabel, selectedType === rt.value && { color: '#06b6d4' }]}>
+                                    <Ionicons name={rt.icon} size={20} color={selectedType === rt.value ? '#06b6d4' : currentColors.textSecondary} />
+                                    <Text style={[styles.typeLabel, { color: currentColors.textPrimary }, selectedType === rt.value && { color: '#06b6d4' }]}>
                                         {rt.label}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <Text style={styles.sectionTitle}>Upload Image</Text>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Upload Image</Text>
 
-                        <TouchableOpacity style={styles.uploadCard} onPress={pickImage} disabled={isLoading}>
+                        <TouchableOpacity style={[styles.uploadCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]} onPress={pickImage} disabled={isLoading}>
                             <Ionicons name="images" size={40} color="#06b6d4" />
-                            <Text style={styles.uploadTitle}>Choose from Gallery</Text>
-                            <Text style={styles.uploadSubtitle}>JPEG, PNG, WebP</Text>
+                            <Text style={[styles.uploadTitle, { color: currentColors.textPrimary }]}>Choose from Gallery</Text>
+                            <Text style={[styles.uploadSubtitle, { color: currentColors.textSecondary }]}>JPEG, PNG, WebP</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.uploadCard} onPress={takePhoto} disabled={isLoading}>
+                        <TouchableOpacity style={[styles.uploadCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]} onPress={takePhoto} disabled={isLoading}>
                             <Ionicons name="camera" size={40} color={Colors.amber} />
-                            <Text style={styles.uploadTitle}>Take a Photo</Text>
-                            <Text style={styles.uploadSubtitle}>Use camera to capture</Text>
+                            <Text style={[styles.uploadTitle, { color: currentColors.textPrimary }]}>Take a Photo</Text>
+                            <Text style={[styles.uploadSubtitle, { color: currentColors.textSecondary }]}>Use camera to capture</Text>
                         </TouchableOpacity>
 
                         {isLoading && (
@@ -153,32 +155,32 @@ export default function LabAnalysisScreen() {
                 ) : (
                     <>
                         <View style={styles.resultHeader}>
-                            <Text style={styles.sectionTitle}>Analysis Results</Text>
+                            <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Analysis Results</Text>
                             <TouchableOpacity onPress={() => setResult(null)}>
-                                <Text style={styles.newText}>New Report</Text>
+                                <Text style={[styles.newText, { color: '#06b6d4' }]}>New Report</Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Summary */}
-                        <View style={styles.summaryCard}>
-                            <Text style={styles.summaryTitle}>Summary</Text>
-                            <Text style={styles.summaryText}>{result.summary}</Text>
-                            <View style={styles.summaryStats}>
+                        <View style={[styles.summaryCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                            <Text style={[styles.summaryTitle, { color: currentColors.textPrimary }]}>Summary</Text>
+                            <Text style={[styles.summaryText, { color: currentColors.textSecondary }]}>{result.summary}</Text>
+                            <View style={[styles.summaryStats, { borderTopColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <View style={styles.summaryStat}>
-                                    <Text style={styles.summaryStatValue}>{result.extracted_values.length}</Text>
-                                    <Text style={styles.summaryStatLabel}>Values</Text>
+                                    <Text style={[styles.summaryStatValue, { color: currentColors.primary }]}>{result.extracted_values.length}</Text>
+                                    <Text style={[styles.summaryStatLabel, { color: currentColors.textSecondary }]}>Values</Text>
                                 </View>
                                 <View style={styles.summaryStat}>
-                                    <Text style={[styles.summaryStatValue, result.abnormal_count > 0 && { color: Colors.amber }]}>
+                                    <Text style={[styles.summaryStatValue, { color: currentColors.primary }, result.abnormal_count > 0 && { color: Colors.amber }]}>
                                         {result.abnormal_count}
                                     </Text>
-                                    <Text style={styles.summaryStatLabel}>Abnormal</Text>
+                                    <Text style={[styles.summaryStatLabel, { color: currentColors.textSecondary }]}>Abnormal</Text>
                                 </View>
                                 <View style={styles.summaryStat}>
-                                    <Text style={[styles.summaryStatValue, result.critical_flags.length > 0 && { color: Colors.rose }]}>
+                                    <Text style={[styles.summaryStatValue, { color: currentColors.primary }, result.critical_flags.length > 0 && { color: Colors.rose }]}>
                                         {result.critical_flags.length}
                                     </Text>
-                                    <Text style={styles.summaryStatLabel}>Critical</Text>
+                                    <Text style={[styles.summaryStatLabel, { color: currentColors.textSecondary }]}>Critical</Text>
                                 </View>
                             </View>
                         </View>
@@ -188,9 +190,9 @@ export default function LabAnalysisScreen() {
                             <View style={styles.criticalSection}>
                                 <Text style={styles.criticalTitle}>⚠️ Critical Flags</Text>
                                 {result.critical_flags.map((flag, i) => (
-                                    <View key={i} style={styles.criticalCard}>
+                                    <View key={i} style={[styles.criticalCard, { backgroundColor: isDark ? currentColors.roseBg : 'rgba(244,63,94,0.05)', borderColor: isDark ? 'rgba(244,63,94,0.2)' : 'rgba(244,63,94,0.1)' }]}>
                                         <Ionicons name="alert-circle" size={18} color={Colors.rose} />
-                                        <Text style={styles.criticalText}>{flag}</Text>
+                                        <Text style={[styles.criticalText, { color: currentColors.textPrimary }]}>{flag}</Text>
                                     </View>
                                 ))}
                             </View>
@@ -199,13 +201,13 @@ export default function LabAnalysisScreen() {
                         {/* Extracted Values */}
                         {result.extracted_values.length > 0 && (
                             <View style={styles.valuesSection}>
-                                <Text style={styles.sectionTitle}>Extracted Values</Text>
+                                <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Extracted Values</Text>
                                 {result.extracted_values.map((val, i) => (
-                                    <View key={i} style={styles.valueCard}>
+                                    <View key={i} style={[styles.valueCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                                         {Object.entries(val).map(([key, value], j) => (
                                             <View key={j} style={styles.valueRow}>
-                                                <Text style={styles.valueLabel}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-                                                <Text style={styles.valueText}>{String(value)}</Text>
+                                                <Text style={[styles.valueLabel, { color: currentColors.textSecondary }]}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                                                <Text style={[styles.valueText, { color: currentColors.textPrimary }]}>{String(value)}</Text>
                                             </View>
                                         ))}
                                     </View>
@@ -215,19 +217,19 @@ export default function LabAnalysisScreen() {
 
                         {/* Full Report */}
                         {reportLines.length > 0 && (
-                            <View style={styles.reportCard}>
-                                <Text style={styles.reportTitle}>Full Report</Text>
+                            <View style={[styles.reportCard, { backgroundColor: isDark ? 'rgba(6,182,212,0.05)' : 'rgba(6,182,212,0.03)', borderColor: isDark ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.1)' }]}>
+                                <Text style={[styles.reportTitle, { color: currentColors.textPrimary }]}>Full Report</Text>
                                 {reportLines.map((line: string, i: number) => {
                                     const t = line.trim();
-                                    if (t.startsWith('# ')) return <Text key={i} style={styles.rH1}>{t.replace(/^#+\s*/, '')}</Text>;
-                                    if (t.startsWith('## ')) return <Text key={i} style={styles.rH2}>{t.replace(/^#+\s*/, '')}</Text>;
+                                    if (t.startsWith('# ')) return <Text key={i} style={[styles.rH1, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
+                                    if (t.startsWith('## ')) return <Text key={i} style={[styles.rH2, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
                                     if (t.startsWith('- ')) return (
                                         <View key={i} style={{ flexDirection: 'row', gap: 8, paddingLeft: 8 }}>
                                             <Text style={{ color: '#06b6d4', lineHeight: 22 }}>•</Text>
-                                            <Text style={styles.rText}>{t.slice(2).replace(/\*\*/g, '')}</Text>
+                                            <Text style={[styles.rText, { color: currentColors.textSecondary }]}>{t.slice(2).replace(/\*\*/g, '')}</Text>
                                         </View>
                                     );
-                                    return <Text key={i} style={styles.rText}>{t.replace(/\*\*/g, '')}</Text>;
+                                    return <Text key={i} style={[styles.rText, { color: currentColors.textSecondary }]}>{t.replace(/\*\*/g, '')}</Text>;
                                 })}
                             </View>
                         )}

@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { analyzeHeart, HeartDiseaseInput } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 
 type OptionType = { label: string; value: string };
 
@@ -28,17 +29,22 @@ function OptionSelector({
     selected: string;
     onSelect: (val: string) => void;
 }) {
+    const { currentColors, isDark } = useTheme();
     return (
         <View style={styles.fieldSection}>
-            <Text style={styles.fieldLabel}>{label}</Text>
+            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>{label}</Text>
             <View style={styles.optionRow}>
                 {options.map((opt) => (
                     <TouchableOpacity
                         key={opt.value}
-                        style={[styles.optionBtn, selected === opt.value && styles.optionBtnActive]}
+                        style={[
+                            styles.optionBtn,
+                            { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, borderColor: currentColors.cardBorder },
+                            selected === opt.value && [styles.optionBtnActive, { backgroundColor: isDark ? 'rgba(19, 127, 236, 0.15)' : 'rgba(19, 127, 236, 0.1)', borderColor: currentColors.primary }]
+                        ]}
                         onPress={() => onSelect(opt.value)}
                     >
-                        <Text style={[styles.optionText, selected === opt.value && styles.optionTextActive]}>
+                        <Text style={[styles.optionText, { color: currentColors.textSecondary }, selected === opt.value && [styles.optionTextActive, { color: currentColors.primary }]]}>
                             {opt.label}
                         </Text>
                     </TouchableOpacity>
@@ -50,6 +56,7 @@ function OptionSelector({
 
 export default function HeartAssessmentScreen() {
     const router = useRouter();
+    const { currentColors, isDark } = useTheme();
     const [isLoading, setIsLoading] = useState(false);
 
     const [age, setAge] = useState('55');
@@ -99,12 +106,12 @@ export default function HeartAssessmentScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Heart Risk Assessment</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Heart Risk Assessment</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -114,43 +121,51 @@ export default function HeartAssessmentScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.heroSection}>
-                    <View style={[styles.heroIcon, { backgroundColor: Colors.roseBg }]}>
+                    <View style={[styles.heroIcon, { backgroundColor: isDark ? 'rgba(244, 63, 94, 0.15)' : 'rgba(244, 63, 94, 0.1)' }]}>
                         <Ionicons name="heart" size={28} color={Colors.rose} />
                     </View>
-                    <Text style={styles.heroTitle}>Cardiac Risk Analysis</Text>
-                    <Text style={styles.heroSubtitle}>
+                    <Text style={[styles.heroTitle, { color: currentColors.textPrimary }]}>Cardiac Risk Analysis</Text>
+                    <Text style={[styles.heroSubtitle, { color: currentColors.textSecondary }]}>
                         Enter clinical data to receive AI-powered heart disease risk assessment with triage and diagnostic report.
                     </Text>
                 </View>
 
-                <View style={styles.formCard}>
+                <View style={[styles.formCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                     {/* Age & Sex Row */}
                     <View style={styles.rowFields}>
                         <View style={[styles.fieldSection, { flex: 1 }]}>
-                            <Text style={styles.fieldLabel}>Age</Text>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Age</Text>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                 value={age}
                                 onChangeText={setAge}
                                 keyboardType="number-pad"
-                                placeholderTextColor={Colors.textMuted}
+                                placeholderTextColor={currentColors.textSecondary}
                             />
                         </View>
 
                         <View style={[styles.fieldSection, { flex: 1 }]}>
-                            <Text style={styles.fieldLabel}>Sex</Text>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Sex</Text>
                             <View style={styles.optionRow}>
                                 <TouchableOpacity
-                                    style={[styles.optionBtn, sex === 'M' && styles.optionBtnActive]}
+                                    style={[
+                                        styles.optionBtn,
+                                        { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, borderColor: currentColors.cardBorder },
+                                        sex === 'M' && [styles.optionBtnActive, { backgroundColor: isDark ? 'rgba(19, 127, 236, 0.15)' : 'rgba(19, 127, 236, 0.1)', borderColor: currentColors.primary }]
+                                    ]}
                                     onPress={() => setSex('M')}
                                 >
-                                    <Text style={[styles.optionText, sex === 'M' && styles.optionTextActive]}>M</Text>
+                                    <Text style={[styles.optionText, { color: currentColors.textSecondary }, sex === 'M' && [styles.optionTextActive, { color: currentColors.primary }]]}>M</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.optionBtn, sex === 'F' && styles.optionBtnActive]}
+                                    style={[
+                                        styles.optionBtn,
+                                        { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, borderColor: currentColors.cardBorder },
+                                        sex === 'F' && [styles.optionBtnActive, { backgroundColor: isDark ? 'rgba(19, 127, 236, 0.15)' : 'rgba(19, 127, 236, 0.1)', borderColor: currentColors.primary }]
+                                    ]}
                                     onPress={() => setSex('F')}
                                 >
-                                    <Text style={[styles.optionText, sex === 'F' && styles.optionTextActive]}>F</Text>
+                                    <Text style={[styles.optionText, { color: currentColors.textSecondary }, sex === 'F' && [styles.optionTextActive, { color: currentColors.primary }]]}>F</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -170,23 +185,23 @@ export default function HeartAssessmentScreen() {
 
                     <View style={styles.rowFields}>
                         <View style={[styles.fieldSection, { flex: 1 }]}>
-                            <Text style={styles.fieldLabel}>Resting BP (mmHg)</Text>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Resting BP (mmHg)</Text>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                 value={restingBP}
                                 onChangeText={setRestingBP}
                                 keyboardType="number-pad"
-                                placeholderTextColor={Colors.textMuted}
+                                placeholderTextColor={currentColors.textSecondary}
                             />
                         </View>
                         <View style={[styles.fieldSection, { flex: 1 }]}>
-                            <Text style={styles.fieldLabel}>Cholesterol (mg/dl)</Text>
+                            <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Cholesterol (mg/dl)</Text>
                             <TextInput
-                                style={styles.textInput}
+                                style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                                 value={cholesterol}
                                 onChangeText={setCholesterol}
                                 keyboardType="number-pad"
-                                placeholderTextColor={Colors.textMuted}
+                                placeholderTextColor={currentColors.textSecondary}
                             />
                         </View>
                     </View>
@@ -213,13 +228,13 @@ export default function HeartAssessmentScreen() {
                     />
 
                     <View style={styles.fieldSection}>
-                        <Text style={styles.fieldLabel}>Max Heart Rate</Text>
+                        <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>Max Heart Rate</Text>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                             value={maxHR}
                             onChangeText={setMaxHR}
                             keyboardType="number-pad"
-                            placeholderTextColor={Colors.textMuted}
+                            placeholderTextColor={currentColors.textSecondary}
                         />
                     </View>
 
@@ -234,13 +249,13 @@ export default function HeartAssessmentScreen() {
                     />
 
                     <View style={styles.fieldSection}>
-                        <Text style={styles.fieldLabel}>ST Depression (Oldpeak)</Text>
+                        <Text style={[styles.fieldLabel, { color: currentColors.textPrimary }]}>ST Depression (Oldpeak)</Text>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, color: currentColors.textPrimary, borderColor: currentColors.cardBorder }]}
                             value={oldpeak}
                             onChangeText={setOldpeak}
                             keyboardType="decimal-pad"
-                            placeholderTextColor={Colors.textMuted}
+                            placeholderTextColor={currentColors.textSecondary}
                         />
                     </View>
 

@@ -1,0 +1,17 @@
+# Ignore everything by default
+*
+
+# Allow the AcoustixPulse app folder contents
+!/AcoustixPulse/**
+
+# But within AcoustixPulse, ignore these large/unnecessary folders
+AcoustixPulse/node_modules/
+AcoustixPulse/.expo/
+AcoustixPulse/.next/
+AcoustixPulse/dist/
+AcoustixPulse/build/
+AcoustixPulse/.git/
+AcoustixPulse/.env
+
+# Ignore the entire backend folder
+Respiratory_Disease_Classifier_API/

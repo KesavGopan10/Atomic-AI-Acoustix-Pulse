@@ -11,10 +11,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function DetailedReportScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const { currentColors, isDark } = useTheme();
 
     const report = (params.report as string) || '';
     const disease = (params.disease as string) || (params.prediction as string) || 'Healthy';
@@ -42,15 +44,15 @@ export default function DetailedReportScreen() {
         : [];
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: isDark ? 'rgba(16, 25, 34, 0.8)' : 'rgba(255, 255, 255, 0.9)', borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Detailed Diagnostic Report</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Detailed Diagnostic Report</Text>
                 <TouchableOpacity style={styles.headerBtn} onPress={handleShare}>
-                    <Ionicons name="share-outline" size={22} color={Colors.primary} />
+                    <Ionicons name="share-outline" size={22} color={currentColors.primary} />
                 </TouchableOpacity>
             </View>
 
@@ -61,10 +63,10 @@ export default function DetailedReportScreen() {
             >
                 {/* Spectrogram Analysis */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Spectrogram Analysis</Text>
+                    <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Spectrogram Analysis</Text>
 
-                    <View style={styles.spectrogramCard}>
-                        <View style={styles.spectrogramImage}>
+                    <View style={[styles.spectrogramCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                        <View style={[styles.spectrogramImage, { backgroundColor: isDark ? currentColors.slate900 : currentColors.slate100 }]}>
                             {/* Simulated spectrogram visualization */}
                             <View style={styles.spectrogramBars}>
                                 {Array.from({ length: 30 }).map((_, i) => (
@@ -91,16 +93,16 @@ export default function DetailedReportScreen() {
 
                         <View style={styles.spectrogramInfo}>
                             <View style={styles.spectrogramInfoHeader}>
-                                <Ionicons name="analytics" size={16} color={Colors.primary} />
-                                <Text style={styles.spectrogramInfoTitle}>Acoustic Heatmap (Grad-CAM)</Text>
+                                <Ionicons name="analytics" size={16} color={currentColors.primary} />
+                                <Text style={[styles.spectrogramInfoTitle, { color: currentColors.textPrimary }]}>Acoustic Heatmap (Grad-CAM)</Text>
                             </View>
-                            <Text style={styles.spectrogramDescription}>
+                            <Text style={[styles.spectrogramDescription, { color: currentColors.textSecondary }]}>
                                 {disease === 'Healthy'
                                     ? 'No significant anomalies detected in the acoustic signal. Normal breathing patterns across all frequency bands.'
                                     : `Visualization highlighting acoustic patterns in the respiratory signal. Analysis suggests patterns consistent with ${disease}.`}
                             </Text>
-                            <View style={styles.spectrogramFooter}>
-                                <Text style={styles.spectrogramMeta}>Resolution: 44.1kHz</Text>
+                            <View style={[styles.spectrogramFooter, { borderTopColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
+                                <Text style={[styles.spectrogramMeta, { color: currentColors.textSecondary }]}>Resolution: 44.1kHz</Text>
                             </View>
                         </View>
                     </View>
@@ -108,25 +110,25 @@ export default function DetailedReportScreen() {
 
                 {/* Clinical Indicators */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Clinical Indicators</Text>
+                    <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Clinical Indicators</Text>
 
                     <View style={styles.indicatorsGrid}>
-                        <View style={styles.indicatorCard}>
-                            <Text style={styles.indicatorLabel}>RESPIRATORY RATE</Text>
-                            <Text style={[styles.indicatorValue, { color: Colors.primary }]}>
-                                18 <Text style={styles.indicatorUnit}>bpm</Text>
+                        <View style={[styles.indicatorCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                            <Text style={[styles.indicatorLabel, { color: currentColors.textSecondary }]}>RESPIRATORY RATE</Text>
+                            <Text style={[styles.indicatorValue, { color: currentColors.primary }]}>
+                                18 <Text style={[styles.indicatorUnit, { color: currentColors.textSecondary }]}>bpm</Text>
                             </Text>
-                            <View style={styles.indicatorBar}>
+                            <View style={[styles.indicatorBar, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <View style={[styles.indicatorBarFill, { width: '70%', backgroundColor: Colors.emerald }]} />
                             </View>
                         </View>
 
-                        <View style={styles.indicatorCard}>
-                            <Text style={styles.indicatorLabel}>CRACKLES INDEX</Text>
+                        <View style={[styles.indicatorCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                            <Text style={[styles.indicatorLabel, { color: currentColors.textSecondary }]}>CRACKLES INDEX</Text>
                             <Text style={[styles.indicatorValue, { color: disease !== 'Healthy' ? Colors.red : Colors.emerald }]}>
                                 {disease !== 'Healthy' ? 'High' : 'Low'}
                             </Text>
-                            <View style={styles.indicatorBar}>
+                            <View style={[styles.indicatorBar, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                 <View
                                     style={[
                                         styles.indicatorBarFill,
@@ -143,10 +145,10 @@ export default function DetailedReportScreen() {
 
                 {/* Longitudinal Trends */}
                 <View style={styles.section}>
-                    <View style={styles.trendCard}>
+                    <View style={[styles.trendCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
                         <View style={styles.trendHeader}>
-                            <Text style={styles.trendTitle}>Longitudinal Trends (48h)</Text>
-                            <Text style={styles.trendBadge}>Stable</Text>
+                            <Text style={[styles.trendTitle, { color: currentColors.textPrimary }]}>Longitudinal Trends (48h)</Text>
+                            <Text style={[styles.trendBadge, { color: currentColors.primary }]}>Stable</Text>
                         </View>
 
                         <View style={styles.chartContainer}>
@@ -156,7 +158,8 @@ export default function DetailedReportScreen() {
                                         style={[
                                             styles.chartBar,
                                             {
-                                                height: (val / 100) * 96,
+                                                height: `${val}%`,
+                                                backgroundColor: currentColors.primary,
                                                 opacity: 0.3 + (i / trendData.length) * 0.7,
                                             },
                                         ]}
@@ -166,9 +169,9 @@ export default function DetailedReportScreen() {
                         </View>
 
                         <View style={styles.chartLabels}>
-                            <Text style={styles.chartLabel}>-48h</Text>
-                            <Text style={styles.chartLabel}>-24h</Text>
-                            <Text style={[styles.chartLabel, { fontWeight: FontWeight.bold }]}>Today</Text>
+                            <Text style={[styles.chartLabel, { color: currentColors.textSecondary }]}>-48h</Text>
+                            <Text style={[styles.chartLabel, { color: currentColors.textSecondary }]}>-24h</Text>
+                            <Text style={[styles.chartLabel, { fontWeight: FontWeight.bold, color: currentColors.textSecondary }]}>Today</Text>
                         </View>
                     </View>
                 </View>
@@ -176,10 +179,10 @@ export default function DetailedReportScreen() {
                 {/* AI Report Content */}
                 {report ? (
                     <View style={styles.section}>
-                        <View style={styles.reportCard}>
+                        <View style={[styles.reportCard, { backgroundColor: isDark ? 'rgba(19, 127, 236, 0.05)' : 'rgba(19, 127, 236, 0.03)', borderColor: isDark ? 'rgba(19, 127, 236, 0.2)' : 'rgba(19, 127, 236, 0.1)' }]}>
                             <View style={styles.reportHeader}>
-                                <Ionicons name="create" size={20} color={Colors.primary} />
-                                <Text style={styles.reportHeaderTitle}>AI-Generated Clinical Report</Text>
+                                <Ionicons name="create" size={20} color={currentColors.primary} />
+                                <Text style={[styles.reportHeaderTitle, { color: currentColors.textPrimary }]}>AI-Generated Clinical Report</Text>
                             </View>
 
                             <View style={styles.reportContent}>
@@ -187,21 +190,21 @@ export default function DetailedReportScreen() {
                                     const trimmed = line.trim();
                                     if (trimmed.startsWith('# ')) {
                                         return (
-                                            <Text key={i} style={styles.reportH1}>
+                                            <Text key={i} style={[styles.reportH1, { color: currentColors.textPrimary }]}>
                                                 {trimmed.replace(/^#+\s*/, '')}
                                             </Text>
                                         );
                                     }
                                     if (trimmed.startsWith('## ')) {
                                         return (
-                                            <Text key={i} style={styles.reportH2}>
+                                            <Text key={i} style={[styles.reportH2, { color: currentColors.textPrimary }]}>
                                                 {trimmed.replace(/^#+\s*/, '')}
                                             </Text>
                                         );
                                     }
                                     if (trimmed.startsWith('### ')) {
                                         return (
-                                            <Text key={i} style={styles.reportH3}>
+                                            <Text key={i} style={[styles.reportH3, { color: currentColors.primary }]}>
                                                 {trimmed.replace(/^#+\s*/, '')}
                                             </Text>
                                         );
@@ -209,20 +212,20 @@ export default function DetailedReportScreen() {
                                     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
                                         return (
                                             <View key={i} style={styles.reportBullet}>
-                                                <Text style={styles.reportBulletDot}>•</Text>
-                                                <Text style={styles.reportText}>{trimmed.slice(2)}</Text>
+                                                <Text style={[styles.reportBulletDot, { color: currentColors.primary }]}>•</Text>
+                                                <Text style={[styles.reportText, { color: currentColors.textSecondary }]}>{trimmed.slice(2)}</Text>
                                             </View>
                                         );
                                     }
                                     if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
                                         return (
-                                            <Text key={i} style={styles.reportBold}>
+                                            <Text key={i} style={[styles.reportBold, { color: currentColors.textPrimary }]}>
                                                 {trimmed.replace(/\*\*/g, '')}
                                             </Text>
                                         );
                                     }
                                     return (
-                                        <Text key={i} style={styles.reportText}>
+                                        <Text key={i} style={[styles.reportText, { color: currentColors.textSecondary }]}>
                                             {trimmed.replace(/\*\*/g, '')}
                                         </Text>
                                     );
@@ -232,12 +235,12 @@ export default function DetailedReportScreen() {
                     </View>
                 ) : (
                     <View style={styles.section}>
-                        <View style={styles.reportCard}>
+                        <View style={[styles.reportCard, { backgroundColor: isDark ? 'rgba(19, 127, 236, 0.05)' : 'rgba(19, 127, 236, 0.03)', borderColor: isDark ? 'rgba(19, 127, 236, 0.2)' : 'rgba(19, 127, 236, 0.1)' }]}>
                             <View style={styles.reportHeader}>
-                                <Ionicons name="create" size={20} color={Colors.primary} />
-                                <Text style={styles.reportHeaderTitle}>Doctor's Clinical Notes</Text>
+                                <Ionicons name="create" size={20} color={currentColors.primary} />
+                                <Text style={[styles.reportHeaderTitle, { color: currentColors.textPrimary }]}>Doctor's Clinical Notes</Text>
                             </View>
-                            <Text style={styles.reportQuote}>
+                            <Text style={[styles.reportQuote, { color: currentColors.textSecondary }]}>
                                 "Patient displays normal respiratory patterns with no significant anomalies.
                                 Acoustic signal analysis confirms healthy breathing baseline.
                                 Continue regular monitoring as part of wellness routine."
@@ -248,7 +251,7 @@ export default function DetailedReportScreen() {
 
                 {/* Export Button */}
                 <TouchableOpacity
-                    style={styles.exportButton}
+                    style={[styles.exportButton, { backgroundColor: currentColors.primary }]}
                     onPress={handleShare}
                     activeOpacity={0.85}
                 >

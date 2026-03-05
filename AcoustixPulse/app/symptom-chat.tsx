@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { symptomChat, ChatMessage, SymptomChatResponse } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -26,6 +27,7 @@ interface Message {
 
 export default function SymptomChatScreen() {
     const router = useRouter();
+    const { currentColors, isDark } = useTheme();
     const scrollRef = useRef<ScrollView>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState('');
@@ -80,12 +82,12 @@ export default function SymptomChatScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Symptom Checker</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Symptom Checker</Text>
                 <TouchableOpacity
                     style={styles.headerBtn}
                     onPress={() => {
@@ -93,7 +95,7 @@ export default function SymptomChatScreen() {
                         setChatHistory([]);
                     }}
                 >
-                    <Ionicons name="refresh" size={22} color={Colors.primary} />
+                    <Ionicons name="refresh" size={22} color={currentColors.primary} />
                 </TouchableOpacity>
             </View>
 
@@ -111,16 +113,16 @@ export default function SymptomChatScreen() {
                 >
                     {messages.length === 0 && (
                         <View style={styles.emptyState}>
-                            <View style={[styles.emptyIcon, { backgroundColor: Colors.emeraldBg }]}>
+                            <View style={[styles.emptyIcon, { backgroundColor: isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.1)' }]}>
                                 <Ionicons name="chatbubbles" size={36} color={Colors.emerald} />
                             </View>
-                            <Text style={styles.emptyTitle}>AI Symptom Checker</Text>
-                            <Text style={styles.emptySubtitle}>
+                            <Text style={[styles.emptyTitle, { color: currentColors.textPrimary }]}>AI Symptom Checker</Text>
+                            <Text style={[styles.emptySubtitle, { color: currentColors.textSecondary }]}>
                                 Describe your symptoms and I'll help assess them. Start by telling me what you're experiencing.
                             </Text>
 
                             <View style={styles.suggestionsContainer}>
-                                <Text style={styles.suggestionsTitle}>Try saying:</Text>
+                                <Text style={[styles.suggestionsTitle, { color: currentColors.textSecondary }]}>Try saying:</Text>
                                 {[
                                     'I have a persistent cough and chest pain',
                                     'I feel shortness of breath when walking',
@@ -128,11 +130,11 @@ export default function SymptomChatScreen() {
                                 ].map((s, i) => (
                                     <TouchableOpacity
                                         key={i}
-                                        style={styles.suggestionChip}
+                                        style={[styles.suggestionChip, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}
                                         onPress={() => sendMessage(s)}
                                     >
-                                        <Text style={styles.suggestionText}>{s}</Text>
-                                        <Ionicons name="arrow-forward" size={14} color={Colors.primary} />
+                                        <Text style={[styles.suggestionText, { color: currentColors.textPrimary }]}>{s}</Text>
+                                        <Ionicons name="arrow-forward" size={14} color={currentColors.primary} />
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -148,22 +150,22 @@ export default function SymptomChatScreen() {
                             ]}
                         >
                             {msg.role === 'assistant' && (
-                                <View style={styles.botAvatar}>
-                                    <Ionicons name="medical" size={16} color={Colors.primary} />
+                                <View style={[styles.botAvatar, { backgroundColor: isDark ? 'rgba(7,114,225,0.2)' : 'rgba(7,114,225,0.1)' }]}>
+                                    <Ionicons name="medical" size={16} color={currentColors.primary} />
                                 </View>
                             )}
                             <View
                                 style={[
                                     styles.messageContent,
-                                    msg.role === 'user' ? styles.userContent : styles.assistantContent,
+                                    msg.role === 'user' ? [styles.userContent, { backgroundColor: currentColors.primary }] : [styles.assistantContent, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }],
                                 ]}
                             >
-                                <Text style={[styles.messageText, msg.role === 'user' && styles.userText]}>
+                                <Text style={[styles.messageText, { color: msg.role === 'user' ? Colors.white : currentColors.textPrimary }, msg.role === 'user' && styles.userText]}>
                                     {msg.content}
                                 </Text>
 
                                 {msg.urgency && (
-                                    <View style={styles.urgencyBadge}>
+                                    <View style={[styles.urgencyBadge, { borderTopColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                                         <View style={[styles.urgencyDot, { backgroundColor: getUrgencyColor(msg.urgency) }]} />
                                         <Text style={[styles.urgencyText, { color: getUrgencyColor(msg.urgency) }]}>
                                             Urgency: {msg.urgency}
@@ -172,10 +174,10 @@ export default function SymptomChatScreen() {
                                 )}
 
                                 {msg.conditions && msg.conditions.length > 0 && (
-                                    <View style={styles.conditionsContainer}>
-                                        <Text style={styles.conditionsTitle}>Suspected Conditions:</Text>
+                                    <View style={[styles.conditionsContainer, { borderTopColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
+                                        <Text style={[styles.conditionsTitle, { color: currentColors.textSecondary }]}>Suspected Conditions:</Text>
                                         {msg.conditions.map((c, j) => (
-                                            <Text key={j} style={styles.conditionText}>
+                                            <Text key={j} style={[styles.conditionText, { color: currentColors.textPrimary }]}>
                                                 • {typeof c === 'object' ? (c.condition || c.name || JSON.stringify(c)) : c}
                                             </Text>
                                         ))}
@@ -187,10 +189,10 @@ export default function SymptomChatScreen() {
                                         {msg.followUps.map((q, j) => (
                                             <TouchableOpacity
                                                 key={j}
-                                                style={styles.followUpChip}
+                                                style={[styles.followUpChip, { backgroundColor: isDark ? 'rgba(7,114,225,0.15)' : 'rgba(7,114,225,0.1)', borderColor: isDark ? 'rgba(7,114,225,0.3)' : 'rgba(7,114,225,0.2)' }]}
                                                 onPress={() => sendMessage(q)}
                                             >
-                                                <Text style={styles.followUpText}>{q}</Text>
+                                                <Text style={[styles.followUpText, { color: currentColors.primary }]}>{q}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -201,31 +203,31 @@ export default function SymptomChatScreen() {
 
                     {isLoading && (
                         <View style={styles.loadingBubble}>
-                            <View style={styles.botAvatar}>
-                                <Ionicons name="medical" size={16} color={Colors.primary} />
+                            <View style={[styles.botAvatar, { backgroundColor: isDark ? 'rgba(7,114,225,0.2)' : 'rgba(7,114,225,0.1)' }]}>
+                                <Ionicons name="medical" size={16} color={currentColors.primary} />
                             </View>
-                            <View style={styles.assistantContent}>
-                                <ActivityIndicator color={Colors.primary} size="small" />
-                                <Text style={styles.loadingText}>Analyzing symptoms...</Text>
+                            <View style={[styles.assistantContent, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                                <ActivityIndicator color={currentColors.primary} size="small" />
+                                <Text style={[styles.loadingText, { color: currentColors.textSecondary }]}>Analyzing symptoms...</Text>
                             </View>
                         </View>
                     )}
                 </ScrollView>
 
                 {/* Input Bar */}
-                <View style={styles.inputContainer}>
+                <View style={[styles.inputContainer, { borderTopColor: isDark ? currentColors.slate800 : currentColors.slate200, backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)' }]}>
                     <TextInput
-                        style={styles.textInput}
+                        style={[styles.textInput, { backgroundColor: isDark ? currentColors.slate800 : currentColors.slate100, borderColor: currentColors.cardBorder, color: currentColors.textPrimary }]}
                         value={inputText}
                         onChangeText={setInputText}
                         placeholder="Describe your symptoms..."
-                        placeholderTextColor={Colors.textMuted}
+                        placeholderTextColor={currentColors.textSecondary}
                         multiline
                         maxLength={500}
                         onSubmitEditing={() => sendMessage()}
                     />
                     <TouchableOpacity
-                        style={[styles.sendBtn, (!inputText.trim() || isLoading) && styles.sendBtnDisabled]}
+                        style={[styles.sendBtn, { backgroundColor: currentColors.primary }, (!inputText.trim() || isLoading) && styles.sendBtnDisabled]}
                         onPress={() => sendMessage()}
                         disabled={!inputText.trim() || isLoading}
                     >

@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors, Spacing, BorderRadius, FontSize, FontWeight } from '@/constants/theme';
 import { analyzeScan, ScanAnalysisResponse } from '@/services/api';
+import { useTheme } from '@/context/ThemeContext';
 
 type ScanType = 'chest_xray' | 'ecg' | 'ct_scan' | 'mri';
 
@@ -26,6 +27,7 @@ const scanTypes: { type: ScanType; label: string; icon: keyof typeof Ionicons.gl
 
 export default function ScanAnalysisScreen() {
     const router = useRouter();
+    const { currentColors, isDark } = useTheme();
     const [selectedType, setSelectedType] = useState<ScanType>('chest_xray');
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<ScanAnalysisResponse | null>(null);
@@ -92,12 +94,12 @@ export default function ScanAnalysisScreen() {
     const reportLines = result?.report ? result.report.split('\n').filter((l: string) => l.trim()) : [];
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: currentColors.backgroundDark }]}>
+            <View style={[styles.header, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+                    <Ionicons name="chevron-back" size={24} color={currentColors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Medical Image Analysis</Text>
+                <Text style={[styles.headerTitle, { color: currentColors.textPrimary }]}>Medical Image Analysis</Text>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -105,43 +107,43 @@ export default function ScanAnalysisScreen() {
                 {!result ? (
                     <>
                         <View style={styles.heroSection}>
-                            <View style={[styles.heroIcon, { backgroundColor: Colors.amberBg }]}>
+                            <View style={[styles.heroIcon, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)' }]}>
                                 <Ionicons name="scan" size={28} color={Colors.amber} />
                             </View>
-                            <Text style={styles.heroTitle}>Upload Medical Scan</Text>
-                            <Text style={styles.heroSubtitle}>
+                            <Text style={[styles.heroTitle, { color: currentColors.textPrimary }]}>Upload Medical Scan</Text>
+                            <Text style={[styles.heroSubtitle, { color: currentColors.textSecondary }]}>
                                 Upload an X-ray, ECG, CT, or MRI image for AI-powered analysis and findings.
                             </Text>
                         </View>
 
-                        <Text style={styles.sectionTitle}>Scan Type</Text>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Scan Type</Text>
                         <View style={styles.scanTypeGrid}>
                             {scanTypes.map((s) => (
                                 <TouchableOpacity
                                     key={s.type}
-                                    style={[styles.scanTypeCard, selectedType === s.type && { borderColor: s.color, borderWidth: 2 }]}
+                                    style={[styles.scanTypeCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }, selectedType === s.type && { borderColor: s.color, borderWidth: 2 }]}
                                     onPress={() => setSelectedType(s.type)}
                                 >
                                     <View style={[styles.scanTypeIcon, { backgroundColor: s.color + '20' }]}>
                                         <Ionicons name={s.icon} size={22} color={s.color} />
                                     </View>
-                                    <Text style={[styles.scanTypeLabel, selectedType === s.type && { color: s.color }]}>{s.label}</Text>
+                                    <Text style={[styles.scanTypeLabel, { color: currentColors.textPrimary }, selectedType === s.type && { color: s.color }]}>{s.label}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <Text style={styles.sectionTitle}>Upload Image</Text>
+                        <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Upload Image</Text>
 
-                        <TouchableOpacity style={styles.uploadCard} onPress={pickImage} disabled={isLoading}>
-                            <Ionicons name="images" size={40} color={Colors.primary} />
-                            <Text style={styles.uploadTitle}>Choose from Gallery</Text>
-                            <Text style={styles.uploadSubtitle}>JPEG, PNG, WebP</Text>
+                        <TouchableOpacity style={[styles.uploadCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]} onPress={pickImage} disabled={isLoading}>
+                            <Ionicons name="images" size={40} color={currentColors.primary} />
+                            <Text style={[styles.uploadTitle, { color: currentColors.textPrimary }]}>Choose from Gallery</Text>
+                            <Text style={[styles.uploadSubtitle, { color: currentColors.textSecondary }]}>JPEG, PNG, WebP</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.uploadCard} onPress={takePhoto} disabled={isLoading}>
+                        <TouchableOpacity style={[styles.uploadCard, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]} onPress={takePhoto} disabled={isLoading}>
                             <Ionicons name="camera" size={40} color={Colors.amber} />
-                            <Text style={styles.uploadTitle}>Take a Photo</Text>
-                            <Text style={styles.uploadSubtitle}>Use camera to capture</Text>
+                            <Text style={[styles.uploadTitle, { color: currentColors.textPrimary }]}>Take a Photo</Text>
+                            <Text style={[styles.uploadSubtitle, { color: currentColors.textSecondary }]}>Use camera to capture</Text>
                         </TouchableOpacity>
 
                         {isLoading && (
@@ -154,20 +156,20 @@ export default function ScanAnalysisScreen() {
                 ) : (
                     <>
                         <View style={styles.resultHeader}>
-                            <Text style={styles.sectionTitle}>Scan Results</Text>
+                            <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Scan Results</Text>
                             <TouchableOpacity onPress={() => setResult(null)}>
-                                <Text style={styles.newScanText}>New Scan</Text>
+                                <Text style={[styles.newScanText, { color: currentColors.primary }]}>New Scan</Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Findings */}
                         {result.findings && Object.keys(result.findings).length > 0 && (
-                            <View style={styles.card}>
-                                <Text style={styles.cardTitle}>Findings</Text>
+                            <View style={[styles.card, { backgroundColor: currentColors.cardDark, borderColor: currentColors.cardBorder }]}>
+                                <Text style={[styles.cardTitle, { color: currentColors.textPrimary }]}>Findings</Text>
                                 {Object.entries(result.findings).map(([key, value], i) => (
-                                    <View key={i} style={styles.dataRow}>
-                                        <Text style={styles.dataLabel}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-                                        <Text style={styles.dataValue}>
+                                    <View key={i} style={[styles.dataRow, { borderBottomColor: isDark ? currentColors.slate800 : currentColors.slate200 }]}>
+                                        <Text style={[styles.dataLabel, { color: currentColors.textSecondary }]}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                                        <Text style={[styles.dataValue, { color: currentColors.textPrimary }]}>
                                             {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                                         </Text>
                                     </View>
@@ -177,19 +179,19 @@ export default function ScanAnalysisScreen() {
 
                         {/* Report */}
                         {reportLines.length > 0 && (
-                            <View style={styles.reportCard}>
-                                <Text style={styles.cardTitle}>AI Report</Text>
+                            <View style={[styles.reportCard, { backgroundColor: isDark ? 'rgba(19,127,236,0.05)' : 'rgba(19,127,236,0.03)', borderColor: isDark ? 'rgba(19,127,236,0.2)' : 'rgba(19,127,236,0.1)' }]}>
+                                <Text style={[styles.cardTitle, { color: currentColors.textPrimary }]}>AI Report</Text>
                                 {reportLines.map((line: string, i: number) => {
                                     const t = line.trim();
-                                    if (t.startsWith('# ')) return <Text key={i} style={styles.rH1}>{t.replace(/^#+\s*/, '')}</Text>;
-                                    if (t.startsWith('## ')) return <Text key={i} style={styles.rH2}>{t.replace(/^#+\s*/, '')}</Text>;
+                                    if (t.startsWith('# ')) return <Text key={i} style={[styles.rH1, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
+                                    if (t.startsWith('## ')) return <Text key={i} style={[styles.rH2, { color: currentColors.textPrimary }]}>{t.replace(/^#+\s*/, '')}</Text>;
                                     if (t.startsWith('- ')) return (
                                         <View key={i} style={{ flexDirection: 'row', gap: 8, paddingLeft: 8 }}>
-                                            <Text style={{ color: Colors.primary, lineHeight: 22 }}>•</Text>
-                                            <Text style={styles.rText}>{t.slice(2).replace(/\*\*/g, '')}</Text>
+                                            <Text style={{ color: currentColors.primary, lineHeight: 22 }}>•</Text>
+                                            <Text style={[styles.rText, { color: currentColors.textSecondary }]}>{t.slice(2).replace(/\*\*/g, '')}</Text>
                                         </View>
                                     );
-                                    return <Text key={i} style={styles.rText}>{t.replace(/\*\*/g, '')}</Text>;
+                                    return <Text key={i} style={[styles.rText, { color: currentColors.textSecondary }]}>{t.replace(/\*\*/g, '')}</Text>;
                                 })}
                             </View>
                         )}
