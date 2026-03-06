@@ -2,7 +2,7 @@
 
 > **Respiratory Classifier** • **Heart Disease Analysis** • **Medical Imaging** • **Lab Reports** • **Symptom Checker** • **Drug Interactions**
 
-A comprehensive medical AI REST API combining a pre-trained **Random Forest** classifier for respiratory diseases with **Amazon Bedrock (Claude 3.5 Sonnet)** powered endpoints for cardiac analysis, medical image interpretation, lab report reading, conversational symptom checking, and drug interaction analysis.
+A comprehensive medical AI REST API combining a high-precision **Random Forest** classifier for respiratory diseases with **Amazon Bedrock (Claude 3.5 Sonnet)** as the primary intelligence layer. Features enterprise-grade reliability with **Groq** as a high-speed fallback for cardiac analysis, medical image interpretation, lab report reading, conversational symptom checking, and drug interaction analysis.
 
 ---
 
@@ -27,9 +27,9 @@ A comprehensive medical AI REST API combining a pre-trained **Random Forest** cl
 | 📋 Patient Report | `POST /report` | 📝 JSON | Groq LLM |
 | 🫀 Heart Disease | `POST /heart/analyze` | 📊 Clinical data | 3-step LLM chain |
 | 🔬 Medical Imaging | `POST /scan/analyze` | 🖼️ Image | Vision LLM |
-| 🧪 Lab Reports | `POST /lab/analyze` | 🖼️ Image | 2-step Vision LLM |
-| 💬 Symptom Checker | `POST /symptoms/chat` | 💬 Chat | Conversational LLM |
-| 💊 Drug Interactions | `POST /drugs/check` | 📝 JSON | 2-step LLM chain |
+| 🧪 Lab Reports | `POST /lab/analyze` | 🖼️ Image | Bedrock Vision (Primary) |
+| 💬 Symptom Checker | `POST /symptoms/chat` | 💬 Chat | Bedrock Claude (Primary) |
+| 💊 Drug Interactions | `POST /drugs/check` | 📝 JSON | Bedrock Reasoning (Primary) |
 | ❤️ Health Check | `GET /` | — | — |
 | 📋 Classes | `GET /classes` | — | — |
 
@@ -338,7 +338,10 @@ flowchart LR
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `GROQ_API_KEY` | Yes (for LLM endpoints) | — | API key from [console.groq.com](https://console.groq.com) |
+| `GROQ_API_KEY` | No (Fallback) | — | API key from [console.groq.com](https://console.groq.com) |
+| `AWS_ACCESS_KEY_ID` | Yes (Primary) | — | AWS credentials for Bedrock access |
+| `AWS_SECRET_ACCESS_KEY`| Yes (Primary) | — | AWS credentials for Bedrock access |
+| `AWS_REGION_NAME` | No | `us-east-1` | AWS region for Bedrock |
 | `GROQ_MODEL` | No | `meta-llama/llama-4-scout-17b-16e-instruct` | Groq model to use |
 | `MODEL_PATH` | No | `respiratory_classifier.pkl` | Path to the trained RF model |
 | `CACHE_MAX_SIZE` | No | `128` | Max cached predictions |
@@ -354,7 +357,19 @@ This API is for **educational and demonstration purposes only**. AI-generated me
 ## 💡 Why This Stack?
 
 - **Random Forest** is CPU-native — no GPU needed, inference in milliseconds
-- **Amazon Bedrock** provides highly secure, enterprise-grade LLM inference
+- **Amazon Bedrock** provides highly secure, enterprise-grade LLM inference with private data protection
 - **Claude 3.5 Sonnet** is a state-of-the-art model for both complex medical reasoning and vision
+- **High-Performance Hosting**: Optimized for **AWS App Runner** and **AWS Fargate** for seamless scaling
 - **FastAPI** gives automatic OpenAPI docs, type validation, and async support
 - **Modular routers** make each feature independently testable and deployable
+
+---
+
+## 🚀 Future AWS Roadmap
+
+We are committed to continuously "boosting" the platform's capabilities using the AWS ecosystem:
+
+- **Amazon HealthLake**: For storing and analyzing health data at scale with HIPAA-eligible storage.
+- **Amazon SageMaker**: To further fine-tune respiratory models on larger proprietary clinical datasets.
+- **AWS Step Functions**: To orchestrate complex multi-stage medical diagnostic workflows.
+- **Amazon Pinpoint**: For patient engagement and notification of diagnostic results.

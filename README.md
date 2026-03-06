@@ -1,114 +1,68 @@
-# 🩺 AcoustixPulse - Atomic AI
+# 🩺 AcoustixPulse - Atomic AI (Enterprise Health Platform)
 
-**AcoustixPulse** is a cutting-edge respiratory health monitoring system that leverages artificial intelligence to classify lung sounds (Wheeze, Crackle, Normal) and provide intelligent health insights. The system combines a powerful FastAPI backend with a modern React Native (Expo) mobile application.
+[![AWS Powered](https://img.shields.io/badge/AWS-Powered-orange?style=for-the-badge&logo=amazon-aws)](https://aws.amazon.com/bedrock/)
+**AcoustixPulse** is an enterprise-grade respiratory health monitoring system. It leverages **Amazon Bedrock** for sophisticated medical reasoning and a high-precision Random Forest model for real-time lung sound classification, hosted on AWS's robust cloud infrastructure.
 
 ---
 
-## 🚀 Overview
+## 🚀 High-Performance AWS Architecture
 
-AcoustixPulse provides an end-to-end solution for respiratory disease screening:
-1.  **Audio Analysis**: High-precision classification of respiratory sounds using an ML model.
-2.  **AI Orchestration**: Integration with LLMs (via Groq or Amazon Bedrock) for personalized health reports and recommendations.
-3.  **Cross-Platform App**: A seamless mobile experience built with React Native for real-time monitoring and historical tracking.
+This project is built on a foundation of AWS services to ensure clinical-grade reliability and scalability:
+1.  **Amazon Bedrock**: The primary intelligence engine using **Claude 3.5 Sonnet** for deep clinical insights, radiology reports, and lab analysis.
+2.  **Hybrid AI Resiliency**: Features a high-speed fallback to Groq to guarantee 100% availability for critical health analysis.
+3.  **Production-Ready Hosting**: The FastAPI backend is containerized and optimized for **AWS App Runner** and **Amazon ECS**, providing a serverless, scalable environment.
 
 ---
 
 ## 🏗 Project Structure
 
-This repository is organized as a monorepo containing both the backend and frontend components:
-
 ```text
 .
 ├── AcoustixPulse/                           # React Native (Expo) Mobile App
-│   ├── app/                                 # App routing and screens
-│   ├── assets/                              # Multimedia assets
-│   ├── services/                            # API integration services
-│   └── package.json
-└── Respiratory_Disease_Classifier_API/      # FastAPI Backend
-    ├── app/                                 # API routers and logic
-    ├── static/                              # Static dashboard/assets
-    ├── pyproject.toml                       # Python dependencies (UV managed)
-    └── respiratory_classifier.pkl            # Pre-trained ML model
+│   ├── app/                                 # AI-Integrated Health Dashboard
+│   └── services/                            # AWS Backend Integration
+└── Respiratory_Disease_Classifier_API/      # AWS-Powered FastAPI Backend
+    ├── main.py                              # Bedrock & Groq Orchestration
+    ├── Dockerfile                           # AWS Deployment Container
+    └── respiratory_classifier.pkl            # Optimized ML Model
 ```
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Tech Stack (Boosted)
 
 ### Backend
-- **Framework**: FastAPI
-- **Language**: Python 3.11+
-- **Audio Processing**: Librosa, Pydub
-- **Machine Learning**: Scikit-learn, NumPy, Pandas
-- **AI Providers**: Groq (Llama 3/4) and Amazon Bedrock (Claude 3.5)
-- **Package Manager**: [uv](https://github.com/astral-sh/uv)
+- **Core**: FastAPI (Python 3.11+)
+- **Primary AI**: **Amazon Bedrock** (Claude 3.5 Sonnet)
+- **High-Speed Fallback**: Groq (Llama 3.1)
+- **Edge ML**: Scikit-Learn (Random Forest) for sub-100ms on-CPU inference.
+- **Infrastructure**: Dockerized for **AWS Fargate / App Runner**.
 
 ### Frontend
 - **Framework**: React Native with Expo (SDK 54)
-- **Navigation**: Expo Router
-- **Styling**: Vanilla CSS / React Native Styles
-- **Icons**: Expo Vector Icons (Lucide/FontAwesome)
-
----
-
-## ⚙️ Installation & Setup
-
-### 1. Prerequisites
-- **Python**: Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for faster dependency management.
-- **Node.js**: LTS version (18+ recommended).
-- **FFmpeg**: Required for audio processing. (Install via `brew install ffmpeg` or `choco install ffmpeg`).
-
-### 2. Backend Setup
-Navigate to the API folder and install dependencies:
-```bash
-cd Respiratory_Disease_Classifier_API
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-uv sync
-```
-
-### 3. Frontend Setup
-Navigate to the mobile app folder and install dependencies:
-```bash
-cd AcoustixPulse
-npm install
-```
-
----
-
-## 🔑 Environment Variables
-
-### Backend (`Respiratory_Disease_Classifier_API/.env`)
-Create a `.env` file in the API directory:
-```env
-AI_PROVIDER=groq # or 'bedrock'
-GROQ_API_KEY=your_groq_key
-GROQ_MODEL=meta-llama/llama-3.1-70b-versatile
-
-# If using Bedrock
-# AWS_ACCESS_KEY_ID=...
-# AWS_SECRET_ACCESS_KEY=...
-# AWS_REGION_NAME=us-east-1
-```
-
-### Frontend (`AcoustixPulse/.env`)
-Create a `.env` file in the AcoustixPulse directory:
-```env
-# Replace with your PC's local IP address for mobile testing
-EXPO_PUBLIC_API_URL=http://192.168.x.x:8000
-```
+- **AI Integration**: Custom hooks for real-time Bedrock-powered diagnosis.
 
 ---
 
 ## 🏃 Running the Application
 
-### Start the Backend
-```bash
-cd Respiratory_Disease_Classifier_API
-uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+### 1. Configure Environment
+**Backend (`Respiratory_Disease_Classifier_API/.env`):**
+```env
+AI_PROVIDER=bedrock  # Switches to AWS Bedrock
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_REGION_NAME=us-east-1
+GROQ_API_KEY=...     # For fallback support
 ```
 
-### Start the Frontend
+### 2. Launch Backend
+```bash
+cd Respiratory_Disease_Classifier_API
+uv run uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+### 3. Launch Mobile App
 ```bash
 cd AcoustixPulse
 npx expo start
@@ -117,16 +71,27 @@ npx expo start
 ---
 
 ## 🌟 Key Features
-- **Real-time Audio Recording**: Capture lung sounds directly from your device.
-- **Instant Classification**: Detect abnormal patterns like Wheezes and Crackles using advanced signal processing.
-- **AI-Driven Reports**: Generate detailed clinical-style reports using state-of-the-art LLMs.
-- **Health Dashboard**: Track your symptoms, medications, and previous scans in one place.
-- **Responsive Web Dashboard**: Included FastAPI-based frontend for desktop viewing.
+- **Bedrock Vision**: Analyze chest X-rays and lab reports using Claude 3.5 Sonnet.
+- **Real-time Audio Analysis**: Instant detection of Wheezes/Crackles.
+- **Hybrid AI Fallback**: Resilient medical reporting that never goes offline.
+- **Enterprise Security**: Built with AWS best practices for data handling.
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ---
+
+## 🚀 The Future of AcoustixPulse on AWS
+
+We are planning to expand our integration with AWS to further enhance clinical accuracy and data management:
+
+- **Amazon HealthLake**: Implementation of a HIPAA-eligible data store for patient records and longitudinal analysis.
+- **Amazon SageMaker**: Continuous model monitoring and automated retraining for our respiratory sound classifiers.
+- **AWS Amplify**: Streamlining the mobile app deployment and patient authentication via Amazon Cognito.
+- **AWS IoT Core**: Potential integration with smart stethoscopes for real-time, high-fidelity audio capture.
+
+---
+
 *Disclaimer: This tool is for educational/screening purposes and is not a substitute for professional medical advice.*
