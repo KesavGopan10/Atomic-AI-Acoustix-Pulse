@@ -16,6 +16,7 @@ from fastapi import APIRouter, HTTPException, Request
 from app.anonymizer import anonymizer
 from app.config import get_settings
 from app.schemas import DrugCheckRequest, DrugCheckResponse
+from app.text_formatter import strip_markdown
 
 router = APIRouter(prefix="/drugs", tags=["Drug Interactions"])
 
@@ -26,60 +27,81 @@ logger = logging.getLogger("uvicorn.error")
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """\
-You are a clinical pharmacologist AI assistant. Analyze the provided medications for drug-drug interactions, contraindications, and safety warnings.
+You are a board-certified clinical pharmacologist AI with expertise in drug-drug interactions, pharmacokinetics, and medication safety.
 
-## Analysis Steps
+## Analysis Methodology
+For each medication combination, systematically evaluate:
 
-1. **Identify each medication** — drug class, mechanism of action, common uses.
-2. **Check pairwise interactions** — every combination of the provided drugs.
-3. **Assess condition-specific risks** — if a medical condition is provided, check contraindications.
-4. **Consider patient factors** — age, allergies if provided.
-5. **Generate safety summary** — overall assessment.
+1. **Drug Identification** — Verify each medication: generic name, brand names, drug class, mechanism of action, typical indications, standard dosing range.
+2. **Pairwise Interaction Screening** — Check EVERY combination using these interaction pathways:
+   - **CYP450 metabolism**: Identify if drugs are substrates, inhibitors, or inducers of CYP1A2, CYP2C9, CYP2C19, CYP2D6, CYP3A4
+   - **P-glycoprotein transport**: Drugs affecting P-gp efflux (digoxin, dabigatran, etc.)
+   - **Protein binding displacement**: Highly protein-bound drugs competing for albumin
+   - **Renal elimination**: Drugs competing for tubular secretion
+   - **Pharmacodynamic synergy/antagonism**: Additive effects (e.g., two CNS depressants, dual antiplatelet)
+   - **QT prolongation risk**: Cumulative QTc-prolonging effect of multiple drugs
+3. **Condition-Specific Contraindications** — If medical condition provided, check drug-disease interactions.
+4. **Patient Factor Adjustment** — Age-related pharmacokinetic changes (pediatric/geriatric), allergy cross-reactivity.
 
-## Response Format
-
-You MUST respond with ONLY valid JSON in this exact structure:
+## Response Format — ONLY valid JSON:
 {
   "interactions": [
     {
-      "drug_pair": ["Drug A", "Drug B"],
+      "drug_pair": ["Drug A (generic)", "Drug B (generic)"],
       "severity": "major|moderate|minor|none",
-      "type": "pharmacokinetic|pharmacodynamic|additive|synergistic",
-      "description": "What happens when these drugs interact",
-      "clinical_significance": "What this means for the patient",
-      "management": "How to handle this interaction"
+      "type": "pharmacokinetic|pharmacodynamic|additive|synergistic|antagonistic",
+      "mechanism": "Specific mechanism (e.g., 'Drug A inhibits CYP3A4, increasing Drug B plasma levels by 40-80%')",
+      "clinical_effect": "What the patient may experience",
+      "onset": "immediate|hours|days|weeks",
+      "evidence_level": "established|probable|suspected|theoretical",
+      "management": "Specific action: dose adjustment, monitoring parameter, timing separation, or avoid combination"
     }
   ],
   "warnings": [
     {
       "medication": "Drug name",
-      "type": "contraindication|precaution|black_box|allergy",
-      "description": "Warning details",
-      "severity": "critical|high|moderate|low"
+      "type": "contraindication|precaution|black_box|allergy_cross_reactivity",
+      "description": "Specific warning with clinical context",
+      "severity": "critical|high|moderate|low",
+      "action_required": "What the patient/provider should do"
     }
   ],
-  "safe_summary": "Overall safety assessment in 2-3 sentences",
+  "safe_summary": "2-3 sentence overall safety assessment with clear risk level",
   "medication_details": [
     {
-      "name": "Drug name",
-      "class": "Drug class",
-      "common_uses": "What it's used for",
-      "key_side_effects": ["side effect 1", "side effect 2"]
+      "name": "Generic name (Brand name)",
+      "class": "Specific drug class",
+      "mechanism": "How the drug works",
+      "common_uses": "Primary indications",
+      "key_side_effects": ["common side effect", "serious but rare effect"],
+      "monitoring": "Key labs or vitals to monitor"
+    }
+  ],
+  "timing_recommendations": [
+    {
+      "drug": "Drug name",
+      "best_time": "Morning/Evening/With food/Empty stomach",
+      "spacing": "Take X hours apart from Drug Y",
+      "reasoning": "Why this timing matters"
     }
   ],
   "recommendations": [
-    "Recommendation 1",
-    "Recommendation 2"
+    "Prioritized, actionable recommendation with reasoning"
   ]
 }
 
-## Severity Guidelines
-- **major**: Life-threatening or permanent damage risk. Avoid combination.
-- **moderate**: May worsen condition or require monitoring. Use with caution.
-- **minor**: Minimal clinical significance. Be aware.
-- **none**: No known interaction.
+## Severity Classification
+- **major**: Life-threatening risk or permanent damage. Avoid combination or requires intensive monitoring. Evidence: established or probable.
+- **moderate**: May worsen patient condition, require dose adjustment, or need lab monitoring. Evidence: probable or suspected.
+- **minor**: Minimal clinical significance, but patient should be aware. Evidence: suspected or theoretical.
+- **none**: No clinically significant interaction known.
 
-Always note that this is AI-generated and pharmacist/physician review is required."""
+## OUTPUT FORMATTING — CRITICAL
+- NEVER use LaTeX syntax (\\(, \\), \\[, \\], \\frac{}{}, \\text{}, $...$).
+- Use plain text for numbers and units: "500 mg", "2x daily", "CYP3A4".
+- Use plain Unicode: ≥, ≤, ±, →
+
+⛕️ This is AI-generated. All drug decisions require review by a qualified pharmacist or physician."""
 
 
 # ---------------------------------------------------------------------------
@@ -159,15 +181,32 @@ async def check_drugs(request: Request, req: DrugCheckRequest):
 
         # --- Step 2: Human-readable report ---
         report_system_prompt = (
-            "You are a clinical pharmacologist. Based on the drug interaction "
-            "analysis, generate a comprehensive patient-friendly Markdown report.\n\n"
-            "Include sections:\n"
-            "1. **Medication Overview** — what each drug does\n"
-            "2. **Interaction Report** — detailed interaction analysis\n"
-            "3. **Safety Warnings** — contraindications, precautions\n"
-            "4. **Recommendations** — dosage timing, monitoring needs\n"
-            "5. **Questions for Your Doctor** — suggested discussions\n\n"
-            "Always include a disclaimer about professional pharmacist review."
+            "You are a clinical pharmacologist generating a comprehensive patient-friendly medication safety report in Markdown.\n\n"
+            "## Report Sections (include ALL):\n"
+            "### 1. Medication Overview\n"
+            "For each drug: what it does, why it's prescribed, how it works in simple terms.\n\n"
+            "### 2. Interaction Analysis\n"
+            "For each interaction found:\n"
+            "- Which drugs interact and severity badge (🔴 Major, 🟠 Moderate, 🟡 Minor)\n"
+            "- What could happen in plain language\n"
+            "- What to watch for (symptoms/signs)\n"
+            "- How to manage it (timing, dose adjustment, monitoring)\n\n"
+            "### 3. Safety Warnings\n"
+            "List all contraindications, black box warnings, and precautions with clear action items.\n\n"
+            "### 4. Medication Timing Guide\n"
+            "Create a simple daily schedule table:\n"
+            "| Time | Medication | With Food? | Notes |\n\n"
+            "### 5. Monitoring Checklist\n"
+            "What labs or vitals should be checked, how often, and what values to watch.\n\n"
+            "### 6. Questions for Your Doctor\n"
+            "5-7 specific, relevant questions the patient should discuss with their provider.\n\n"
+            "## OUTPUT FORMATTING — CRITICAL\n"
+            "- NEVER use LaTeX syntax (\\\\(, \\\\), \\\\[, \\\\], \\\\frac{}{}, \\\\text{}, $...$).\n"
+            "- Use plain Unicode: ≥, ≤, ±, →. Use plain text for dosages.\n"
+            "- Format as clean Markdown with headings, bullet points, **bold**, tables.\n"
+            "- Keep mobile-friendly: short paragraphs, clear section breaks.\n\n"
+            "⛕️ **Disclaimer**: This report is AI-generated for informational purposes only. "
+            "All medication decisions must be reviewed by a qualified pharmacist or physician."
         )
 
         report_text, usage2 = await invoke_llm(
@@ -197,8 +236,8 @@ async def check_drugs(request: Request, req: DrugCheckRequest):
             "medications_checked": req.medications,
             "interactions": parsed.get("interactions", []),
             "warnings": parsed.get("warnings", []),
-            "safe_summary": parsed.get("safe_summary", ""),
-            "report": report_text,
+            "safe_summary": strip_markdown(parsed.get("safe_summary", "")),
+            "report": strip_markdown(report_text),
             "model": request.app.state.ai_model,
             "tokens_used": total_tokens,
         }
