@@ -60,13 +60,14 @@ export default function InsightsScreen() {
         ? Math.round((1 - (lastAnalysis.all_probabilities['Healthy'] ?? 0)) * 100)
         : null;
     const riskLabel = lastRisk === null ? '—'
-        : lastRisk < 30 ? 'Low'
-            : lastRisk < 60 ? 'Moderate'
-                : 'High';
-    const riskColor = lastRisk === null ? currentColors.textSecondary
-        : lastRisk < 30 ? Colors.emerald
-            : lastRisk < 60 ? Colors.amber
-                : Colors.rose;
+        : (lastAnalysis?.prediction === 'Healthy' && lastRisk > 30) ? 'Moderate' // Cap at Moderate if Healthy
+            : lastRisk < 30 ? 'Low'
+                : lastRisk < 60 ? 'Moderate'
+                    : 'High';
+
+    const riskColor = riskLabel === 'Low' ? Colors.emerald
+        : riskLabel === 'Moderate' ? Colors.amber
+            : Colors.rose;
 
     // Chart: last 9 analyses (oldest → newest), bar = Healthy%
     const chartData = [...analyses].reverse().slice(0, 9);
@@ -81,7 +82,7 @@ export default function InsightsScreen() {
 
             <ScrollView
                 style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Overview Card */}
@@ -127,7 +128,8 @@ export default function InsightsScreen() {
                             {chartData.map((a, i) => {
                                 const healthyPct = a.all_probabilities['Healthy'] ?? 0;
                                 const barH = Math.max(healthyPct * 100, 4);
-                                const clr = healthyPct > 0.7 ? Colors.emerald : healthyPct > 0.4 ? Colors.amber : Colors.rose;
+                                // Logic fix: If prediction was Healthy, always show Emerald (Green)
+                                const clr = a.prediction === 'Healthy' ? Colors.emerald : (healthyPct > 0.4 ? Colors.amber : Colors.rose);
                                 return (
                                     <View key={i} style={styles.chartBarWrapper}>
                                         <View style={[styles.chartBar, { height: `${barH}%`, backgroundColor: clr }]} />

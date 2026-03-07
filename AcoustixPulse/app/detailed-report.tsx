@@ -58,7 +58,7 @@ export default function DetailedReportScreen() {
 
             <ScrollView
                 style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Spectrogram Analysis */}

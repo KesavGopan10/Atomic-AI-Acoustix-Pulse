@@ -64,10 +64,26 @@ export default function ResultsScreen() {
         : {};
 
     const overallRisk = Math.round((1 - (allProbabilities.Healthy || 0)) * 100);
-    const overallRiskLevel = getRiskLevel(overallRisk / 100);
+    
+    // Logic fix: if prediction is Healthy, force risk to "Low"
+    const overallRiskLevel = prediction === 'Healthy' 
+        ? 'Low' 
+        : getRiskLevel(overallRisk / 100);
 
     // Map conditions to risk metrics
     const riskMetrics: RiskMetric[] = [
+        {
+            name: 'Healthy',
+            icon: 'checkmark-circle-outline',
+            description: prediction === 'Healthy' 
+                ? 'Primary classification' 
+                : 'Insufficient signal stability',
+            level: prediction === 'Healthy' ? 'Low' : 'High',
+            probability: allProbabilities.Healthy || 0,
+            color: prediction === 'Healthy' ? Colors.emerald : Colors.rose,
+            bgColor: prediction === 'Healthy' ? Colors.emeraldBg : Colors.roseBg,
+            infoText: 'Healthy status indicates that the respiratory signals analyzed are within normal range.',
+        },
         {
             name: 'Asthma',
             icon: 'cloudy',
@@ -75,10 +91,10 @@ export default function ResultsScreen() {
                 allProbabilities.Asthma > 0.2
                     ? 'Wheezing patterns detected'
                     : 'Clear breathing patterns detected',
-            level: getRiskLevel(allProbabilities.Asthma || 0),
+            level: prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.Asthma || 0),
             probability: allProbabilities.Asthma || 0,
-            color: getRiskColor(getRiskLevel(allProbabilities.Asthma || 0)),
-            bgColor: getRiskBgColor(getRiskLevel(allProbabilities.Asthma || 0)),
+            color: getRiskColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.Asthma || 0)),
+            bgColor: getRiskBgColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.Asthma || 0)),
             infoText: 'Asthma is a condition in which your airways narrow and swell, making it difficult to breathe.',
         },
         {
@@ -88,10 +104,10 @@ export default function ResultsScreen() {
                 allProbabilities.Pneumonia > 0.2
                     ? 'Crackle sounds identified'
                     : 'No crackle sounds identified',
-            level: getRiskLevel(allProbabilities.Pneumonia || 0),
+            level: prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.Pneumonia || 0),
             probability: allProbabilities.Pneumonia || 0,
-            color: getRiskColor(getRiskLevel(allProbabilities.Pneumonia || 0)),
-            bgColor: getRiskBgColor(getRiskLevel(allProbabilities.Pneumonia || 0)),
+            color: getRiskColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.Pneumonia || 0)),
+            bgColor: getRiskBgColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.Pneumonia || 0)),
             infoText: 'Pneumonia is an infection that inflames the air sacs in one or both lungs, often causing a cough with phlegm.',
         },
         {
@@ -101,23 +117,23 @@ export default function ResultsScreen() {
                 allProbabilities.COPD > 0.2
                     ? 'Obstructive patterns noted'
                     : 'Normal airway dynamics',
-            level: getRiskLevel(allProbabilities.COPD || 0),
+            level: prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.COPD || 0),
             probability: allProbabilities.COPD || 0,
-            color: getRiskColor(getRiskLevel(allProbabilities.COPD || 0)),
-            bgColor: getRiskBgColor(getRiskLevel(allProbabilities.COPD || 0)),
+            color: getRiskColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.COPD || 0)),
+            bgColor: getRiskBgColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.COPD || 0)),
             infoText: 'COPD (Chronic Obstructive Pulmonary Disease) is a group of lung diseases that block airflow and make breathing difficult (like chronic bronchitis or emphysema).',
         },
         {
             name: 'URTI',
             icon: 'thermometer',
             description:
-                allProbabilities.URTI > 0.2
+                allProbabilities.URTI > 0.2 && prediction !== 'Healthy'
                     ? 'Upper tract congestion detected'
                     : 'Clear upper respiratory tract',
-            level: getRiskLevel(allProbabilities.URTI || 0),
+            level: prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.URTI || 0),
             probability: allProbabilities.URTI || 0,
-            color: getRiskColor(getRiskLevel(allProbabilities.URTI || 0)),
-            bgColor: getRiskBgColor(getRiskLevel(allProbabilities.URTI || 0)),
+            color: getRiskColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.URTI || 0)),
+            bgColor: getRiskBgColor(prediction === 'Healthy' ? 'Low' : getRiskLevel(allProbabilities.URTI || 0)),
             infoText: 'URTI (Upper Respiratory Tract Infection) is a common infection in the nose, sinuses, or throat, such as a common cold.',
         },
     ];
@@ -174,7 +190,7 @@ export default function ResultsScreen() {
 
             <ScrollView
                 style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
                 showsVerticalScrollIndicator={false}
             >
 

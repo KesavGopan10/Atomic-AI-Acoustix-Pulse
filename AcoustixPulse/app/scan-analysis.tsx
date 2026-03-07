@@ -103,7 +103,7 @@ export default function ScanAnalysisScreen() {
                 <View style={{ width: 44 }} />
             </View>
 
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]} showsVerticalScrollIndicator={false}>
                 {!result ? (
                     <>
                         <View style={styles.heroSection}>

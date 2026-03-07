@@ -126,7 +126,7 @@ export default function HeartAssessmentScreen() {
 
             <ScrollView
                 style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent, { flexGrow: 1 }]}
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.heroSection}>
