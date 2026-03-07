@@ -206,14 +206,33 @@ export default function DrugCheckScreen() {
                         {result.interactions.length > 0 && (
                             <View style={styles.section}>
                                 <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Interactions</Text>
-                                {result.interactions.map((interaction, i) => (
-                                    <View key={i} style={[styles.interactionCard, { backgroundColor: isDark ? currentColors.amberBg : 'rgba(245, 158, 11, 0.05)', borderColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)' }]}>
-                                        <Ionicons name="warning" size={20} color={Colors.amber} />
-                                        <Text style={[styles.interactionText, { color: currentColors.textPrimary }]}>
-                                            {typeof interaction === 'object' ? JSON.stringify(interaction) : String(interaction)}
-                                        </Text>
-                                    </View>
-                                ))}
+                                {result.interactions.map((interaction, i) => {
+                                    const isObj = typeof interaction === 'object' && interaction !== null;
+                                    const severity = isObj ? interaction.severity : 'warning';
+                                    const drugs = isObj ? (Array.isArray(interaction.drug_pair) ? interaction.drug_pair.join(' + ') : interaction.drug_pair) : null;
+                                    
+                                    return (
+                                        <View key={i} style={[styles.interactionCard, { backgroundColor: isDark ? currentColors.amberBg : 'rgba(245, 158, 11, 0.05)', borderColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.1)' }]}>
+                                            <View style={styles.interactionHeader}>
+                                                <Ionicons name="warning" size={20} color={Colors.amber} />
+                                                <Text style={[styles.severityBadge, { backgroundColor: Colors.amber }]}>{severity?.toUpperCase()}</Text>
+                                            </View>
+                                            
+                                            {drugs && <Text style={[styles.interactionDrugs, { color: currentColors.textPrimary }]}>{drugs}</Text>}
+                                            
+                                            <Text style={[styles.interactionText, { color: currentColors.textPrimary }]}>
+                                                {isObj ? interaction.mechanism || interaction.clinical_effect || interaction.description : String(interaction)}
+                                            </Text>
+                                            
+                                            {isObj && interaction.management && (
+                                                <View style={styles.managementSection}>
+                                                    <Text style={[styles.managementLabel, { color: currentColors.textSecondary }]}>Management:</Text>
+                                                    <Text style={[styles.managementText, { color: currentColors.textPrimary }]}>{interaction.management}</Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    );
+                                })}
                             </View>
                         )}
 
@@ -221,14 +240,20 @@ export default function DrugCheckScreen() {
                         {result.warnings.length > 0 && (
                             <View style={styles.section}>
                                 <Text style={[styles.sectionTitle, { color: currentColors.textPrimary }]}>Warnings</Text>
-                                {result.warnings.map((warning, i) => (
-                                    <View key={i} style={[styles.warningCard, { backgroundColor: isDark ? currentColors.roseBg : 'rgba(244, 63, 94, 0.05)', borderColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.1)' }]}>
-                                        <Ionicons name="alert-circle" size={20} color={Colors.rose} />
-                                        <Text style={[styles.warningText, { color: currentColors.textPrimary }]}>
-                                            {typeof warning === 'object' ? JSON.stringify(warning) : String(warning)}
-                                        </Text>
-                                    </View>
-                                ))}
+                                {result.warnings.map((warning, i) => {
+                                    const isObj = typeof warning === 'object' && warning !== null;
+                                    return (
+                                        <View key={i} style={[styles.warningCard, { backgroundColor: isDark ? currentColors.roseBg : 'rgba(244, 63, 94, 0.05)', borderColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.1)' }]}>
+                                            <View style={styles.warningHeader}>
+                                                <Ionicons name="alert-circle" size={20} color={Colors.rose} />
+                                                <Text style={[styles.fieldLabel, { marginBottom: 0, fontSize: FontSize.sm, color: Colors.rose }]}>WARNING</Text>
+                                            </View>
+                                            <Text style={[styles.warningText, { color: currentColors.textPrimary }]}>
+                                                {isObj ? warning.description || warning.warning_text || JSON.stringify(warning) : String(warning)}
+                                            </Text>
+                                        </View>
+                                    );
+                                })}
                             </View>
                         )}
 
@@ -286,9 +311,16 @@ const styles = StyleSheet.create({
     summaryCard: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, backgroundColor: Colors.emeraldBg, borderRadius: BorderRadius.xl, padding: Spacing.lg, borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.2)', marginBottom: Spacing.lg },
     summaryText: { fontSize: FontSize.md, color: Colors.textPrimary, lineHeight: 22, flex: 1 },
     section: { marginBottom: Spacing.lg },
-    interactionCard: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, backgroundColor: Colors.amberBg, borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.2)', marginBottom: Spacing.sm },
-    interactionText: { fontSize: FontSize.sm, color: Colors.textPrimary, lineHeight: 20, flex: 1 },
-    warningCard: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md, backgroundColor: Colors.roseBg, borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: 'rgba(244, 63, 94, 0.2)', marginBottom: Spacing.sm },
+    interactionCard: { backgroundColor: Colors.amberBg, borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.2)', marginBottom: Spacing.sm },
+    interactionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.sm },
+    severityBadge: { fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, overflow: 'hidden' },
+    interactionDrugs: { fontSize: FontSize.md, fontWeight: FontWeight.bold, marginBottom: 4 },
+    interactionText: { fontSize: FontSize.sm, color: Colors.textPrimary, lineHeight: 20 },
+    managementSection: { marginTop: Spacing.md, paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: 'rgba(245, 158, 11, 0.1)' },
+    managementLabel: { fontSize: FontSize.xs, fontWeight: FontWeight.bold, marginBottom: 2 },
+    managementText: { fontSize: FontSize.sm, lineHeight: 20 },
+    warningCard: { backgroundColor: Colors.roseBg, borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: 'rgba(244, 63, 94, 0.2)', marginBottom: Spacing.sm },
+    warningHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: Spacing.sm },
     warningText: { fontSize: FontSize.sm, color: Colors.textPrimary, lineHeight: 20, flex: 1 },
     reportCard: { backgroundColor: 'rgba(168,85,247,0.05)', borderRadius: BorderRadius.xl, padding: Spacing.xl, borderWidth: 1, borderColor: 'rgba(168,85,247,0.2)', gap: 6, marginTop: Spacing.lg },
     reportTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.textPrimary, marginBottom: Spacing.md },

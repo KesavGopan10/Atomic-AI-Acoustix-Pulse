@@ -69,8 +69,8 @@ export default function InsightsScreen() {
         : riskLabel === 'Moderate' ? Colors.amber
             : Colors.rose;
 
-    // Chart: last 9 analyses (oldest → newest), bar = Healthy%
-    const chartData = [...analyses].reverse().slice(0, 9);
+    // Chart: last N analyses (oldest → newest), bar = Healthy%
+    const chartData = [...analyses].reverse();
 
     const hasData = totalScans > 0;
 
@@ -124,19 +124,21 @@ export default function InsightsScreen() {
                             </View>
                         </View>
 
-                        <View style={styles.chartContainer}>
-                            {chartData.map((a, i) => {
-                                const healthyPct = a.all_probabilities['Healthy'] ?? 0;
-                                const barH = Math.max(healthyPct * 100, 4);
-                                // Logic fix: If prediction was Healthy, always show Emerald (Green)
-                                const clr = a.prediction === 'Healthy' ? Colors.emerald : (healthyPct > 0.4 ? Colors.amber : Colors.rose);
-                                return (
-                                    <View key={i} style={styles.chartBarWrapper}>
-                                        <View style={[styles.chartBar, { height: `${barH}%`, backgroundColor: clr }]} />
-                                    </View>
-                                );
-                            })}
-                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chartScrollContent}>
+                            <View style={styles.chartContainer}>
+                                {chartData.map((a, i) => {
+                                    const healthyPct = a.all_probabilities['Healthy'] ?? 0;
+                                    const barH = Math.max(healthyPct * 100, 4);
+                                    // Logic fix: If prediction was Healthy, always show Emerald (Green)
+                                    const clr = a.prediction === 'Healthy' ? Colors.emerald : (healthyPct > 0.4 ? Colors.amber : Colors.rose);
+                                    return (
+                                        <View key={i} style={styles.chartBarWrapper}>
+                                            <View style={[styles.chartBar, { height: `${barH}%`, backgroundColor: clr }]} />
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        </ScrollView>
 
                         <View style={styles.chartLabels}>
                             <Text style={[styles.chartLabel, { color: currentColors.textSecondary }]}>Oldest</Text>
@@ -206,10 +208,11 @@ const styles = StyleSheet.create({
     trendTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.textPrimary },
     trendBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: BorderRadius.full },
     trendBadgeText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
-    chartContainer: { height: 100, flexDirection: 'row', alignItems: 'flex-end', gap: 4, paddingHorizontal: 4 },
-    chartBarWrapper: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%' },
-    chartBar: { width: '100%', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
-    chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.sm },
+    chartContainer: { height: 100, flexDirection: 'row', alignItems: 'flex-end', gap: 6, paddingHorizontal: 4 },
+    chartScrollContent: { flexGrow: 1, paddingBottom: 4 },
+    chartBarWrapper: { width: 28, alignItems: 'center', justifyContent: 'flex-end', height: '100%' },
+    chartBar: { width: '100%', borderTopLeftRadius: 6, borderTopRightRadius: 6 },
+    chartLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: Spacing.md, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingTop: 8 },
     chartLabel: { fontSize: FontSize.xs, color: Colors.textSecondary },
     sectionTitle: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: Colors.textPrimary, marginBottom: Spacing.md },
     emptyState: { alignItems: 'center', paddingVertical: Spacing.xxxl, gap: Spacing.md },

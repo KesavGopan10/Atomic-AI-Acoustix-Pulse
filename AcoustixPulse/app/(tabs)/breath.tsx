@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -10,7 +10,7 @@ import {
     Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import {
     useAudioRecorder,
@@ -79,6 +79,18 @@ export default function BreathCaptureScreen() {
             if (autoStopTimeout.current) clearTimeout(autoStopTimeout.current);
         };
     }, []);
+
+    // Reset state when screen comes into focus to prevent "stuck" analysis UI
+    useFocusEffect(
+        useCallback(() => {
+            setIsAnalyzing(false);
+            setProgress(0);
+            setStatusText('Waiting for respiratory input...');
+            return () => {
+                // Optional: cleanup when blurring if needed
+            };
+        }, [])
+    );
 
     useEffect(() => {
         if (recorderState.isRecording) {
