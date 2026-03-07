@@ -26,6 +26,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Diagnostic - Check Secrets availability
+        shell: bash
+        run: |
+          if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "✅ AWS_ACCESS_KEY_ID is found."
+          else
+            echo "❌ AWS_ACCESS_KEY_ID is MISSING or EMPTY."
+          fi
+          if [ -n "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "✅ AWS_SECRET_ACCESS_KEY is found."
+          else
+            echo "❌ AWS_SECRET_ACCESS_KEY is MISSING or EMPTY."
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
